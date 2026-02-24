@@ -1,3 +1,8 @@
+# base alpine image for final stages
+FROM alpine:3.23 AS run-base
+RUN addgroup -S -g 501 vmail && \
+  adduser -h /home/vmail -s /bin/false -G vmail -S -D -u 501 vmail
+
 # build chatmaild
 FROM python:3.14-alpine AS chatmaild-build
 WORKDIR /whl  # create dir for built packages
@@ -5,6 +10,8 @@ WORKDIR /src
 RUN apk add --no-cache musl-dev gcc git
 RUN git clone --single-branch --depth 1 https://github.com/chatmail/relay.git /src
 RUN pip wheel --no-cache-dir -w /whl /src/chatmaild
+
+# TODO: chatmaild images
 
 # temporary image for apk builds
 FROM alpine:3.23 AS abuild-base
@@ -19,11 +26,39 @@ RUN git clone https://git.dc09.xyz/chatmail/dovecot.git /src/dovecot
 WORKDIR /src/dovecot
 RUN abuild -C chatmail/dovecot -Fr
 
+# run dovecot
+FROM run-base AS dovecot-run
+WORKDIR /pkg
+COPY \
+  --from=dovecot-build \
+    /pkg/chatmail/x86_64/dovecot-2.3.*.apk \
+    /pkg/chatmail/x86_64/dovecot-lmtpd-2.3.*.apk \
+    /pkg/chatmail/x86_64/dovecot-lua-2.3.*.apk \
+  ./
+RUN apk add --no-cache --allow-untrusted ./*.apk
+WORKDIR /
+RUN rm -rf /pkg
+CMD ["/usr/sbin/dovecot", "-F"]
+
 # build opendkim
 FROM abuild-base AS opendkim-build
 RUN git clone https://git.dc09.xyz/chatmail/opendkim.git /src/opendkim
 WORKDIR /src/opendkim
 RUN abuild -C chatmail/opendkim -Fr
+
+# run opendkim
+FROM run-base AS opendkim-run
+WORKDIR /pkg
+COPY \
+  --from=opendkim-build \
+    /pkg/chatmail/x86_64/opendkim-2.11.*.apk \
+    /pkg/chatmail/x86_64/opendkim-libs-2.11.*.apk \
+    /pkg/chatmail/x86_64/opendkim-utils-2.11.*.apk \
+  ./
+RUN apk add --no-cache --allow-untrusted ./*.apk
+WORKDIR /
+RUN rm -rf /pkg
+CMD ["/usr/sbin/opendkim", "-u", "opendkim", "-f"]
 
 # temporary base image for rust builds
 FROM rust:1.93-alpine AS rust-base
@@ -35,12 +70,32 @@ WORKDIR /src
 RUN git clone --single-branch -b v0.35.0 --depth 1 \
   https://github.com/n0-computer/iroh.git /src
 RUN cargo build --package iroh-relay --features server --profile optimized-release
+RUN echo 'iroh:x:450:450::/:/bin/false' >/etc/min-passwd && \
+  echo 'iroh:x:450:' >/etc/min-group
+
+# run iroh
+FROM scratch AS iroh-run
+COPY --from=iroh-build /src/target/optimized-release/iroh-relay /
+COPY --from=iroh-build /etc/min-passwd /etc/passwd
+COPY --from=iroh-build /etc/min-group /etc/group
+USER 450:450
+CMD ["/iroh-relay", "--config-path", "/config.toml"]
 
 # build chatmail-turn
 FROM rust-base AS turn-build
 WORKDIR /src
 RUN git clone https://github.com/chatmail/chatmail-turn.git /src
 RUN cargo build --release
+RUN echo 'vmail:x:501:501::/:/bin/false' >/etc/min-passwd && \
+  echo 'vmail:x:501:' >/etc/min-group
+
+# run chatmail-turn
+FROM alpine:3.23 AS turn-run
+COPY --from=turn-build /src/target/release/chatmail-turn /
+USER 501:501
+EXPOSE 3478/udp
+# TODO: cleanup socket file
+CMD ["sh", "-c", "exec /chatmail-turn --realm $realm --socket /run/chatmail-turn/turn.socket"]
 
 # build filtermail
 FROM rust-base AS filtermail-build
@@ -48,8 +103,29 @@ WORKDIR /src
 RUN git clone https://github.com/chatmail/filtermail.git /src
 RUN cargo build --profile dist
 
+# base image for filtermail
+FROM run-base AS filtermail-base
+COPY --from=filtermail-build /src/target/dist/filtermail /
+# TODO
+#ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
+USER 501:501
+
+# run filtermail for outgoing mail
+FROM filtermail-base AS filtermail-out-run
+CMD ["/filtermail", "/etc/chatmail.ini", "outgoing"]
+
+# run filtermail for incoming mail
+FROM filtermail-base AS filtermail-in-run
+CMD ["/filtermail", "/etc/chatmail.ini", "incoming"]
+
 # build newemail
 FROM rust-base AS newemail-build
 WORKDIR /src
 RUN git clone https://git.dc09.xyz/chatmail/newemail.git /src
 RUN cargo build --release
+
+# run newemail
+FROM run-base AS newemail-run
+COPY --from=newemail-build /src/target/release/newemail /
+# TODO: user
+CMD ["/newemail"]
