@@ -1,7 +1,13 @@
+ARG ALPINE_VER=3.23
+ARG RUST_VER=1.93
+
+ARG VMAIL_UID=501
+ARG VMAIL_GID=501
+
 # base alpine image for final stages
-FROM alpine:3.23 AS run-base
-RUN addgroup -S -g 501 vmail && \
-  adduser -h /home/vmail -s /bin/false -G vmail -S -D -u 501 vmail
+FROM alpine:$ALPINE_VER AS run-base
+RUN addgroup -S -g $VMAIL_GID vmail && \
+  adduser -h /home/vmail -s /bin/false -G vmail -S -D -u $VMAIL_UID vmail
 
 # build chatmaild
 FROM python:3.14-alpine AS chatmaild-build
@@ -14,7 +20,7 @@ RUN pip wheel --no-cache-dir -w /whl /src/chatmaild
 # TODO: chatmaild images
 
 # temporary image for apk builds
-FROM alpine:3.23 AS abuild-base
+FROM alpine:$ALPINE_VER AS abuild-base
 RUN apk update && apk add --no-cache alpine-sdk git
 ENV REPODEST=/pkg ABUILD_USERDIR=/abuild SUDO=
 RUN abuild-keygen -ain
@@ -61,7 +67,7 @@ RUN rm -rf /pkg
 CMD ["/usr/sbin/opendkim", "-u", "opendkim", "-f"]
 
 # temporary base image for rust builds
-FROM rust:1.93-alpine AS rust-base
+FROM rust:$RUST_VER-alpine AS rust-base
 RUN apk add --no-cache git
 
 # build iroh relay
@@ -86,13 +92,13 @@ FROM rust-base AS turn-build
 WORKDIR /src
 RUN git clone https://github.com/chatmail/chatmail-turn.git /src
 RUN cargo build --release
-RUN echo 'vmail:x:501:501::/:/bin/false' >/etc/min-passwd && \
-  echo 'vmail:x:501:' >/etc/min-group
+RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
+  echo "vmail:x:$VMAIL_GID:" >/etc/min-group
 
 # run chatmail-turn
 FROM alpine:3.23 AS turn-run
 COPY --from=turn-build /src/target/release/chatmail-turn /
-USER 501:501
+USER $VMAIL_UID:$VMAIL_GID
 EXPOSE 3478/udp
 # TODO: cleanup socket file
 CMD ["sh", "-c", "exec /chatmail-turn --realm $realm --socket /run/chatmail-turn/turn.socket"]
@@ -108,7 +114,7 @@ FROM run-base AS filtermail-base
 COPY --from=filtermail-build /src/target/dist/filtermail /
 # TODO
 #ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
-USER 501:501
+USER $VMAIL_UID:$VMAIL_GID
 
 # run filtermail for outgoing mail
 FROM filtermail-base AS filtermail-out-run
