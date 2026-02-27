@@ -6,6 +6,8 @@ ARG VMAIL_GID=501
 
 # base alpine image for final stages
 FROM alpine:$ALPINE_VER AS run-base
+ARG VMAIL_UID
+ARG VMAIL_GID
 RUN addgroup -S -g $VMAIL_GID vmail && \
   adduser -h /home/vmail -s /bin/false -G vmail -S -D -u $VMAIL_UID vmail
 
@@ -106,6 +108,8 @@ FROM rust-base AS filtermail-build
 WORKDIR /src
 RUN git clone https://github.com/chatmail/filtermail.git /src
 RUN cargo build --profile dist
+ARG VMAIL_UID
+ARG VMAIL_GID
 RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
   echo "vmail:x:$VMAIL_GID:" >/etc/min-group
 
