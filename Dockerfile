@@ -92,11 +92,9 @@ FROM rust-base AS turn-build
 WORKDIR /src
 RUN git clone https://github.com/chatmail/chatmail-turn.git /src
 RUN cargo build --release
-RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
-  echo "vmail:x:$VMAIL_GID:" >/etc/min-group
 
 # run chatmail-turn
-FROM alpine:3.23 AS turn-run
+FROM run-base AS turn-run
 COPY --from=turn-build /src/target/release/chatmail-turn /
 USER $VMAIL_UID:$VMAIL_GID
 EXPOSE 3478/udp
@@ -108,10 +106,14 @@ FROM rust-base AS filtermail-build
 WORKDIR /src
 RUN git clone https://github.com/chatmail/filtermail.git /src
 RUN cargo build --profile dist
+RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
+  echo "vmail:x:$VMAIL_GID:" >/etc/min-group
 
 # base image for filtermail
-FROM run-base AS filtermail-base
+FROM scratch AS filtermail-base
 COPY --from=filtermail-build /src/target/dist/filtermail /
+COPY --from=filtermail-build /etc/min-passwd /etc/passwd
+COPY --from=filtermail-build /etc/min-group /etc/group
 # TODO
 #ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
 USER $VMAIL_UID:$VMAIL_GID
