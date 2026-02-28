@@ -113,7 +113,10 @@ CMD ["/turn.sh"]
 # build filtermail
 FROM rust-base AS filtermail-build
 WORKDIR /src
-RUN git clone -b v0.5.2 https://github.com/chatmail/filtermail.git /src
+RUN git clone \
+  --revision b982dc5577b44ce1c0ca5bac2106bc944a273eda \
+  https://git.dc09.xyz/chatmail/filtermail.git \
+  /src
 RUN cargo build --profile dist
 ARG VMAIL_UID
 ARG VMAIL_GID
@@ -125,8 +128,7 @@ FROM scratch AS filtermail-base
 COPY --from=filtermail-build /src/target/dist/filtermail /
 COPY --from=filtermail-build /etc/min-passwd /etc/passwd
 COPY --from=filtermail-build /etc/min-group /etc/group
-# TODO
-#ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
+ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
 USER $VMAIL_UID:$VMAIL_GID
 
 # run filtermail for outgoing mail
