@@ -138,7 +138,10 @@ RUN git clone https://git.dc09.xyz/chatmail/newemail.git /src
 RUN cargo build --release
 
 # run newemail
-FROM run-base AS newemail-run
+FROM alpine:$ALPINE_VER AS newemail-run
+COPY ./src/temprundir.sh /
 COPY --from=newemail-build /src/target/release/newemail /
-# TODO: user
-CMD ["/newemail"]
+RUN addgroup -S -g 101 nginx && \
+  adduser -s /bin/false -G nginx -S -D -H -u 101 nginx
+USER 101:101
+CMD ["/tmprundir.sh", "/run/newemail", "/newemail"]
