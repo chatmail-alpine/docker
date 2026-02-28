@@ -10,6 +10,10 @@ ARG VMAIL_UID
 ARG VMAIL_GID
 RUN addgroup -S -g $VMAIL_GID vmail && \
   adduser -h /home/vmail -s /bin/false -G vmail -S -D -u $VMAIL_UID vmail
+RUN addgroup -S -g 201 postfix && \
+  adduser -h /var/spool/postfix -s /bin/false -G postfix -S -D -H -u 201 postfix
+RUN addgroup -S -g 202 opendkim && \
+  adduser -h /run/opendkim -s /bin/false -G opendkim -S -D -H -u 202 opendkim
 
 # base image to build and run python modules
 # (deduplicates `apk add python3` operation)
