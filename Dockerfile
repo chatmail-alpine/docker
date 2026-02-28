@@ -38,9 +38,22 @@ COPY --from=chatmaild-build /whl/*.whl ./
 RUN /venv/bin/pip install --no-cache-dir ./*.whl
 WORKDIR /
 RUN rm -rf /whl
+COPY ./src/temprundir.sh /
+COPY ./src/chatmaild.sh /
 USER $VMAIL_UID:$VMAIL_GID
 
-# TODO: chatmaild images
+# run chatmaild services
+# ---
+FROM chatmaild-base AS metadata-run
+# usage: /chatmaild.sh <bin name> <rundir name> <socket filename>
+CMD ["/chatmaild.sh", "chatmail-metadata", "chatmail-metadata", "metadata.socket"]
+
+FROM chatmaild-base AS doveauth-run
+CMD ["/chatmaild.sh", "doveauth", "doveauth", "doveauth.socket"]
+
+FROM chatmaild-base AS lastlogin-run
+CMD ["/chatmaild.sh", "lastlogin", "chatmail-lastlogin", "lastlogin.socket"]
+# ---
 
 # temporary image for apk builds
 FROM alpine:$ALPINE_VER AS abuild-base
