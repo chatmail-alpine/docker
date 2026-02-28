@@ -16,7 +16,11 @@ FROM python:3.14-alpine AS chatmaild-build
 WORKDIR /whl  # create dir for built packages
 WORKDIR /src
 RUN apk add --no-cache musl-dev gcc git
-RUN git clone --single-branch --depth 1 https://github.com/chatmail/relay.git /src
+RUN git clone \
+  --single-branch --depth 1 \
+  --revision dbd5cd16f5d8d849120bcac60c139b9bff68374a \
+  https://github.com/chatmail/relay.git \
+  /src
 RUN pip wheel --no-cache-dir -w /whl /src/chatmaild
 
 # TODO: chatmaild images
@@ -30,7 +34,7 @@ WORKDIR /src
 
 # build patched dovecot
 FROM abuild-base AS dovecot-build
-RUN git clone https://git.dc09.xyz/chatmail/dovecot.git /src/dovecot
+RUN git clone -b v2.3.21.1-3 https://git.dc09.xyz/chatmail/dovecot.git /src/dovecot
 WORKDIR /src/dovecot
 RUN abuild -C chatmail/dovecot -Fr
 
@@ -50,7 +54,7 @@ CMD ["/usr/sbin/dovecot", "-F"]
 
 # build opendkim
 FROM abuild-base AS opendkim-build
-RUN git clone https://git.dc09.xyz/chatmail/opendkim.git /src/opendkim
+RUN git clone -b v2.11.0-5 https://git.dc09.xyz/chatmail/opendkim.git /src/opendkim
 WORKDIR /src/opendkim
 RUN abuild -C chatmail/opendkim -Fr
 
@@ -75,8 +79,10 @@ RUN apk add --no-cache git
 # build iroh relay
 FROM rust-base AS iroh-build
 WORKDIR /src
-RUN git clone --single-branch -b v0.35.0 --depth 1 \
-  https://github.com/n0-computer/iroh.git /src
+RUN git clone \
+  -b v0.35.0 --single-branch --depth 1 \
+  https://github.com/n0-computer/iroh.git \
+  /src
 RUN cargo build --package iroh-relay --features server --profile optimized-release
 RUN echo 'iroh:x:450:450::/:/bin/false' >/etc/min-passwd && \
   echo 'iroh:x:450:' >/etc/min-group
@@ -92,7 +98,7 @@ CMD ["/iroh-relay", "--config-path", "/config.toml"]
 # build chatmail-turn
 FROM rust-base AS turn-build
 WORKDIR /src
-RUN git clone https://github.com/chatmail/chatmail-turn.git /src
+RUN git clone -b v0.3 https://github.com/chatmail/chatmail-turn.git /src
 RUN cargo build --release
 
 # run chatmail-turn
@@ -107,7 +113,7 @@ CMD ["/turn.sh"]
 # build filtermail
 FROM rust-base AS filtermail-build
 WORKDIR /src
-RUN git clone https://github.com/chatmail/filtermail.git /src
+RUN git clone -b v0.5.2 https://github.com/chatmail/filtermail.git /src
 RUN cargo build --profile dist
 ARG VMAIL_UID
 ARG VMAIL_GID
@@ -134,7 +140,7 @@ CMD ["/filtermail", "/etc/chatmail.ini", "incoming"]
 # build newemail
 FROM rust-base AS newemail-build
 WORKDIR /src
-RUN git clone https://git.dc09.xyz/chatmail/newemail.git /src
+RUN git clone -b v1.1.0 https://git.dc09.xyz/chatmail/newemail.git /src
 RUN cargo build --release
 
 # run newemail
