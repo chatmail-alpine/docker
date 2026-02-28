@@ -159,8 +159,8 @@ FROM scratch AS filtermail-base
 COPY --from=filtermail-build /src/target/dist/filtermail /
 COPY --from=filtermail-build /etc/min-passwd /etc/passwd
 COPY --from=filtermail-build /etc/min-group /etc/group
-ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
 USER $VMAIL_UID:$VMAIL_GID
+ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
 
 # run filtermail for outgoing mail
 FROM filtermail-base AS filtermail-out-run
