@@ -1,0 +1,180 @@
+protocols = imap lmtp
+auth_mechanisms = plain
+
+default_client_limit = 20000
+
+# Each connection is handled by a separate `imap` process
+service imap {
+  process_limit = 50000
+}
+
+mail_server_admin = mailto:root@{{ mail_domain }}
+mail_server_comment = Chatmail server
+
+# Mailbox compression and limits
+mail_plugins = zlib quota
+# Chatmail custom capabilities
+imap_capability = +XDELTAPUSH XCHATMAIL
+
+# Authentication
+passdb {
+  driver = dict
+  args = /etc/dovecot/auth.conf
+}
+userdb {
+  driver = dict
+  args = /etc/dovecot/auth.conf
+}
+
+##
+## Mailbox locations and namespaces
+
+# /home/vmail/mail/(host)/(user)
+mail_location = maildir:/home/vmail/mail/{{ mail_domain }}/%u
+
+# change locking behavior according to
+# alpine's default dovecot config
+mbox_write_locks = fcntl
+
+# index & cache files are not very useful for chatmail
+mail_cache_max_size = 500K
+
+namespace inbox {
+  inbox = yes
+
+  mailbox Drafts {
+    special_use = \Drafts
+  }
+  mailbox Junk {
+    special_use = \Junk
+  }
+  mailbox Trash {
+    special_use = \Trash
+  }
+
+  mailbox Sent {
+    special_use = \Sent
+  }
+  mailbox "Sent Messages" {
+    special_use = \Sent
+  }
+}
+
+mail_uid = vmail
+mail_gid = vmail
+mail_privileged_group = vmail
+
+##
+## Mail processes
+
+# Pass all IMAP METADATA requests to the chatmail-metadata service
+mail_attribute_dict = proxy:/run/chatmail-metadata/metadata.socket:metadata
+
+protocol imap {
+  mail_plugins = $mail_plugins imap_quota last_login {% if imap_compress %}imap_zlib{% endif %}
+  imap_metadata = yes
+}
+
+plugin {
+  last_login_dict = proxy:/run/chatmail-lastlogin/lastlogin.socket:lastlogin
+  #last_login_key = last-login/%u  # default
+  last_login_precision = s
+}
+
+protocol lmtp {
+  mail_plugins = $mail_plugins mail_lua notify push_notification push_notification_lua
+}
+
+plugin {
+  zlib_save = gz
+}
+
+plugin {
+  imap_compress_deflate_level = 6
+}
+
+plugin {
+  quota = maildir:User quota
+  quota_rule = *:storage={{ max_mailbox_size }}
+  quota_max_mail_size={{ max_message_size }}
+  quota_grace = 0
+}
+
+# push_notification configuration
+plugin {
+  push_notification_driver = lua:file=/etc/dovecot/push_notification.lua
+}
+
+service lmtp {
+  user = vmail
+
+  unix_listener /var/spool/postfix/private/dovecot-lmtp {
+    mode = 0600
+    user = postfix
+    group = postfix
+  }
+}
+
+lmtp_add_received_header = no
+
+service auth {
+  unix_listener /var/spool/postfix/private/auth {
+    mode = 0660
+    user = postfix
+    group = postfix
+  }
+}
+
+service auth-worker {
+  # Drop privileges we don't need
+  user = vmail
+}
+
+service imap-login {
+  # High-performance mode
+  service_count = 0
+
+  # Increase virtual memory size limit
+  vsz_limit = 1G
+
+  # Avoid startup latency for new connections.
+  # Should be set to at least the number of CPU cores
+  # according to the documentation
+  process_min_avail = 10
+}
+
+service anvil {
+  # No point in anvil penalty as it detects brute-forcing
+  # only by IP address, not by username.
+  # A correct IP address is not passed to Dovecot anyway
+  unix_listener anvil-auth-penalty {
+    mode = 0
+  }
+}
+
+# ADJUST PATHS TO TLS CERTS
+ssl = required
+ssl_cert = <{{ tls_cert_path }}
+ssl_key = <{{ tls_key_path }}
+ssl_dh = </etc/dovecot/dh.pem
+ssl_min_protocol = TLSv1.3
+ssl_prefer_server_ciphers = yes
+
+{% if not imap_compress %}
+# Hibernate IDLE users to save memory and CPU resources
+imap_hibernate_timeout = 30s
+service imap {
+  unix_listener imap-master {
+    user = $default_internal_user
+  }
+}
+service imap {
+  extra_groups = $default_internal_group
+}
+service imap-hibernate {
+  unix_listener imap-hibernate {
+    mode = 0660
+    group = $default_internal_group
+  }
+}
+{% endif %}

@@ -1,0 +1,59 @@
+compatibility_level = 3.6
+
+myorigin = {{ mail_domain }}
+smtpd_banner = $myhostname ESMTP $mail_name
+biff = no
+readme_directory = no
+
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+# TLS parameters
+smtpd_tls_cert_file={{ tls_cert_path }}
+smtpd_tls_key_file={{ tls_key_path }}
+smtpd_tls_security_level=may
+
+smtp_tls_CAfile=/etc/ssl/certs/ca-certificates.crt
+smtp_tls_security_level=verify
+# Send SNI when connecting to other servers
+smtp_tls_servername = hostname
+smtp_tls_session_cache_database = lmdb:${data_directory}/smtp_scache
+smtp_tls_policy_maps = regexp:/etc/postfix/smtp_tls_policy_map
+smtp_tls_protocols = >=TLSv1.2
+smtp_tls_mandatory_protocols = >=TLSv1.2
+# Disable anonymous cipher suites and known insecure algorithms
+smtpd_tls_exclude_ciphers = aNULL, RC4, MD5, DES
+# Override client's preference order
+tls_preempt_cipherlist = yes
+
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+
+myhostname = {{ mail_domain }}
+alias_maps = lmdb:/etc/postfix/aliases
+alias_database = lmdb:/etc/postfix/aliases
+
+mydestination =
+relayhost =
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+message_size_limit = {{ max_message_size }}
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+virtual_mailbox_domains = {{ mail_domain }}
+lmtp_header_checks = regexp:/etc/postfix/lmtp_header_cleanup
+
+mua_client_restrictions = permit_sasl_authenticated, reject
+mua_sender_restrictions = reject_sender_login_mismatch, permit_sasl_authenticated, reject
+mua_helo_restrictions = permit_mynetworks, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname, permit
+
+# 1:1 map MAIL FROM to SASL login name
+smtpd_sender_login_maps = regexp:/etc/postfix/login_map
+
+# Do not lookup SMTP client hostnames to reduce delays
+# and avoid unnecessary DNS requests
+smtpd_peername_lookup = no

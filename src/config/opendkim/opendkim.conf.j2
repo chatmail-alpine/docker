@@ -1,0 +1,27 @@
+Syslog no
+LogWhy no
+
+Canonicalization relaxed/simple
+OversignHeaders from,reply-to,subject,date,to,cc,resent-date,resent-from,resent-sender,resent-to,resent-cc,in-reply-to,references,list-id,list-help,list-unsubscribe,list-subscribe,list-post,list-owner,list-archive,autocrypt
+SignHeaders *,+autocrypt,+content-type
+
+On-BadSignature reject
+On-KeyNotFound reject
+On-NoSignature reject
+DNSTimeout 60
+
+Domain {{ mail_domain }}
+Selector {{ opendkim_selector }}
+KeyFile /etc/dkimkeys/{{ opendkim_selector }}.private
+KeyTable /etc/dkimkeys/KeyTable
+SigningTable refile:/etc/dkimkeys/SigningTable
+
+UserID opendkim
+UMask 007
+Socket local:/var/spool/postfix/opendkim/opendkim.sock
+PidFile /run/opendkim/opendkim.pid
+
+TrustAnchorFile /usr/share/dnssec-root/trusted-key.key
+
+MTA ORIGINATING
+InternalHosts -
