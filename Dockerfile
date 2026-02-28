@@ -182,4 +182,4 @@ COPY --from=newemail-build /src/target/release/newemail /
 RUN addgroup -S -g 101 nginx && \
   adduser -s /bin/false -G nginx -S -D -H -u 101 nginx
 USER 101:101
-CMD ["/tmprundir.sh", "/run/newemail", "/newemail"]
+CMD ["/temprundir.sh", "/run/newemail", "/newemail"]
