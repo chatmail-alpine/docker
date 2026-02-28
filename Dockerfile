@@ -11,8 +11,13 @@ ARG VMAIL_GID
 RUN addgroup -S -g $VMAIL_GID vmail && \
   adduser -h /home/vmail -s /bin/false -G vmail -S -D -u $VMAIL_UID vmail
 
+# base image to build and run python modules
+# (deduplicates `apk add python3` operation)
+FROM run-base AS python-base
+RUN apk add --no-cache python3
+
 # build chatmaild
-FROM alpine:$ALPINE_VER AS chatmaild-build
+FROM python-base AS chatmaild-build
 WORKDIR /whl  # create dir for built packages
 WORKDIR /src
 RUN apk add --no-cache python3-dev py3-pip musl-dev gcc git
@@ -24,10 +29,10 @@ RUN git clone \
 RUN pip wheel --no-cache-dir -w /whl /src/chatmaild
 
 # base image to run chatmaild
-FROM run-base AS chatmaild-base
-RUN apk add --no-cache python3 py3-virtualenv
-RUN python3 -m venv /venv
-RUN apk del py3-virtualenv
+FROM python-base AS chatmaild-base
+RUN apk add --no-cache py3-virtualenv && \
+  python3 -m venv /venv && \
+  apk del py3-virtualenv
 WORKDIR /whl
 COPY --from=chatmaild-build /whl/*.whl ./
 RUN /venv/bin/pip install --no-cache-dir ./*.whl
