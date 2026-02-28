@@ -12,10 +12,10 @@ RUN addgroup -S -g $VMAIL_GID vmail && \
   adduser -h /home/vmail -s /bin/false -G vmail -S -D -u $VMAIL_UID vmail
 
 # build chatmaild
-FROM python:3.14-alpine AS chatmaild-build
+FROM alpine:$ALPINE_VER AS chatmaild-build
 WORKDIR /whl  # create dir for built packages
 WORKDIR /src
-RUN apk add --no-cache musl-dev gcc git
+RUN apk add --no-cache python3-dev py3-pip musl-dev gcc git
 RUN git clone \
   --single-branch --depth 1 \
   --revision dbd5cd16f5d8d849120bcac60c139b9bff68374a \
