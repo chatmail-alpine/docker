@@ -23,6 +23,18 @@ RUN git clone \
   /src
 RUN pip wheel --no-cache-dir -w /whl /src/chatmaild
 
+# base image to run chatmaild
+FROM run-base AS chatmaild-base
+RUN apk add --no-cache python3 py3-virtualenv
+RUN python3 -m venv /venv
+RUN apk del py3-virtualenv
+WORKDIR /whl
+COPY --from=chatmaild-build /whl/*.whl ./
+RUN /venv/bin/pip install --no-cache-dir ./*.whl
+WORKDIR /
+RUN rm -rf /whl
+USER $VMAIL_UID:$VMAIL_GID
+
 # TODO: chatmaild images
 
 # temporary image for apk builds
