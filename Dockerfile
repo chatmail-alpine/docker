@@ -97,11 +97,12 @@ RUN cargo build --release
 
 # run chatmail-turn
 FROM run-base AS turn-run
+COPY ./src/temprundir.sh /
+COPY ./src/turn.sh /
 COPY --from=turn-build /src/target/release/chatmail-turn /
 USER $VMAIL_UID:$VMAIL_GID
 EXPOSE 3478/udp
-# TODO: cleanup socket file
-CMD ["sh", "-c", "exec /chatmail-turn --realm $realm --socket /run/chatmail-turn/turn.socket"]
+CMD ["/turn.sh"]
 
 # build filtermail
 FROM rust-base AS filtermail-build
