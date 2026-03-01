@@ -48,7 +48,7 @@ def render_cfg(gc: GenCfg) -> None:
                     f.write(tmpl.render(**cmd_obj))
             else:
                 # simply copy the file
-                dst = cfg_dst / parent / file
+                dst = cfg_dst / parent_rel / file
                 mkdirs(dst)
                 shutil.copy(src, dst)
 
