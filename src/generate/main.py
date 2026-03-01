@@ -115,11 +115,8 @@ def init_rundirs(gc: GenCfg) -> None:
     sock_dir = gc.ins_dir / 'socket'
     for name in lst:
         path = sock_dir / name
-        try:
+        if path.exists():
             shutil.rmtree(path)
-        except Exception as e:
-            import logging
-            logging.exception(f'cannot rm -rf {path}', exc_info=e)
         path.mkdir(mode=0o755, exist_ok=True)
         os.chown(path, 501, 501)
 
