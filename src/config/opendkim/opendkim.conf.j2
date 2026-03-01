@@ -11,8 +11,8 @@ On-NoSignature reject
 DNSTimeout 60
 
 Domain {{ mail_domain }}
-Selector {{ opendkim_selector }}
-KeyFile /etc/dkimkeys/{{ opendkim_selector }}.private
+Selector {{ dkim_selector }}
+KeyFile /etc/dkimkeys/{{ dkim_selector }}.private
 KeyTable /etc/dkimkeys/KeyTable
 SigningTable refile:/etc/dkimkeys/SigningTable
 
