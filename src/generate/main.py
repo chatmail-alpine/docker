@@ -54,6 +54,28 @@ def mkdirs(p: Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
 
 
+def init_rundirs(gc: GenCfg) -> None:
+    lst = [
+        'chatmail-metadata',
+        'doveauth',
+        'chatmail-lastlogin',
+        'chatmail-turn',
+        'newemail',
+    ]
+
+    sock_dir = gc.ins_dir / 'socket'
+    for name in lst:
+        path = sock_dir / name
+        try:
+            shutil.rmtree(path)
+        except Exception as e:
+            import logging
+            logging.exception(f'cannot rm -rf {path}', exc_info=e)
+        path.mkdir(mode=0o755, exist_ok=True)
+        os.chown(path, 501, 501)
+
+
 if __name__ == '__main__':
     gc = GenCfg.from_env()
     render_cfg(gc)
+    init_rundirs(gc)
