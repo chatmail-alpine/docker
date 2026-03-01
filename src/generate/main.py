@@ -105,10 +105,10 @@ def mkdirs(p: Path) -> None:
 
 def init_rundirs(gc: GenCfg) -> None:
     lst = [
-        (501, 501, 'chatmail-metadata'),
-        (501, 501, 'doveauth'),
         (501, 501, 'chatmail-lastlogin'),
+        (501, 501, 'chatmail-metadata'),
         (501, 501, 'chatmail-turn'),
+        (501, 501, 'doveauth'),
         (101, 101, 'newemail'),
     ]
 
