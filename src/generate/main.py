@@ -113,6 +113,7 @@ def init_rundirs(gc: GenCfg) -> None:
     ]
 
     sock_dir = gc.ins_dir / 'socket'
+    sock_dir.mkdir(mode=0o755, exist_ok=True)
     for name in lst:
         path = sock_dir / name
         if path.exists():
