@@ -105,21 +105,22 @@ def mkdirs(p: Path) -> None:
 
 def init_rundirs(gc: GenCfg) -> None:
     lst = [
-        'chatmail-metadata',
-        'doveauth',
-        'chatmail-lastlogin',
-        'chatmail-turn',
-        'newemail',
+        (501, 501, 'chatmail-metadata'),
+        (501, 501, 'doveauth'),
+        (501, 501, 'chatmail-lastlogin'),
+        (501, 501, 'chatmail-turn'),
+        (101, 101, 'newemail'),
     ]
 
     sock_dir = gc.ins_dir / 'socket'
     sock_dir.mkdir(mode=0o755, exist_ok=True)
-    for name in lst:
+
+    for uid, gid, name in lst:
         path = sock_dir / name
         if path.exists():
             shutil.rmtree(path)
         path.mkdir(mode=0o755, exist_ok=True)
-        os.chown(path, 501, 501)
+        os.chown(path, uid, gid)
 
 
 if __name__ == '__main__':
