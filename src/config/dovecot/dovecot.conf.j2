@@ -159,7 +159,7 @@ ssl_dh = </etc/dovecot/dh.pem
 ssl_min_protocol = TLSv1.3
 ssl_prefer_server_ciphers = yes
 
-{% if not imap_compress %}
+{% if not imap_compress -%}
 # Hibernate IDLE users to save memory and CPU resources
 imap_hibernate_timeout = 30s
 service imap {
