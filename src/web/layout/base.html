@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ mail_domain }} | {% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="mask-icon" href="/logo.svg" color="#000000">
+</head>
+<body>
+  <ul id="menu">
+    <li><a href="/">home</a></li>
+    <li><a href="/info">info</a></li>
+    <li><a href="/privacy">privacy</a></li>
+    <li><a href="https://git.dc09.xyz/chatmail/docker">public code ↗</a></li>
+    <li id="domain"><a href="/">{{ mail_domain }}</a></li>
+  </ul>
+  <main>
+    {% filter markdown | safe -%}
+      {% block content %}{% endblock %}
+    {%- endfilter %}
+  </main>
+</body>
+</html>
