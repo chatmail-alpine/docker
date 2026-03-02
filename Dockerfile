@@ -25,27 +25,19 @@ RUN apk add --no-cache python3
 
 # build chatmaild
 FROM python-base AS chatmaild-build
-WORKDIR /whl  # create dir for built packages
 WORKDIR /src
-RUN apk add --no-cache python3-dev py3-pip musl-dev gcc git
+RUN apk add --no-cache py3-virtualenv python3-dev musl-dev gcc git
+RUN python3 -m venv /venv
 RUN git clone \
   --single-branch --depth 1 \
   --revision dbd5cd16f5d8d849120bcac60c139b9bff68374a \
   https://github.com/chatmail/relay.git \
   /src
-RUN pip wheel --no-cache-dir -w /whl /src/chatmaild
-
-# create virtualenv for chatmaild
-FROM python-base AS chatmaild-venv
-RUN apk add --no-cache py3-virtualenv
-RUN python3 -m venv /venv
-WORKDIR /whl
-COPY --from=chatmaild-build /whl/*.whl ./
-RUN /venv/bin/pip install --no-cache-dir ./*.whl
+RUN /venv/bin/pip install --no-cache-dir /src/chatmaild
 
 # base image to run chatmaild
 FROM python-base AS chatmaild-base
-COPY --from=chatmaild-venv /venv /venv
+COPY --from=chatmaild-build /venv /venv
 COPY ./src/temprundir.sh /
 COPY ./src/chatmaild.sh /
 USER $VMAIL_UID:$VMAIL_GID
@@ -64,13 +56,13 @@ CMD ["/chatmaild.sh", "lastlogin", "chatmail-lastlogin", "lastlogin.socket"]
 # ---
 
 # update virtualenv for config generator
-FROM chatmaild-venv AS cmd-gen-venv
+FROM chatmaild-build AS generate-build
 COPY ./src/generate/requirements.txt /req.txt
 RUN /venv/bin/pip install --no-cache-dir -r /req.txt
 
 # run config+webpages generator
 FROM python-base AS generate-run
-COPY --from=cmd-gen-venv /venv /venv
+COPY --from=generate-build /venv /venv
 COPY ./src/generate/main.py /
 CMD ["/venv/bin/python3", "/main.py"]
 
