@@ -88,6 +88,8 @@ COPY \
     /pkg/chatmail/x86_64/dovecot-lmtpd-2.3.*.apk \
     /pkg/chatmail/x86_64/dovecot-lua-2.3.*.apk \
   ./
+# --allow-untrusted is safe since we build packages locally
+# copying repo keys brings unnecessary complexity
 RUN apk add --no-cache --allow-untrusted ./*.apk
 WORKDIR /
 RUN rm -rf /pkg
@@ -108,12 +110,14 @@ COPY \
     /pkg/chatmail/x86_64/opendkim-libs-2.11.*.apk \
     /pkg/chatmail/x86_64/opendkim-utils-2.11.*.apk \
   ./
+# see note on --allow-untrusted above
 RUN apk add --no-cache --allow-untrusted ./*.apk
 WORKDIR /
 RUN rm -rf /pkg
 CMD ["/usr/sbin/opendkim", "-u", "opendkim", "-f"]
 
 # temporary base image for rust builds
+# (deduplicates `apk add git` and rust image tag specifier)
 FROM rust:$RUST_VER-alpine AS rust-base
 RUN apk add --no-cache git
 
@@ -156,6 +160,8 @@ FROM rust-base AS filtermail-build
 WORKDIR /src
 RUN git clone \
   --revision b982dc5577b44ce1c0ca5bac2106bc944a273eda \
+  # filtermail hardcodes postfix host to localhost,
+  # so we use a soft-fork
   https://git.dc09.xyz/chatmail/filtermail.git \
   /src
 RUN cargo build --profile dist
@@ -170,6 +176,7 @@ COPY --from=filtermail-build /src/target/dist/filtermail /
 COPY --from=filtermail-build /etc/min-passwd /etc/passwd
 COPY --from=filtermail-build /etc/min-group /etc/group
 USER $VMAIL_UID:$VMAIL_GID
+# these env vars are available in the fork (see above)
 ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
 
 # run filtermail for outgoing mail
@@ -190,6 +197,8 @@ RUN cargo build --release
 FROM alpine:$ALPINE_VER AS newemail-run
 COPY ./src/temprundir.sh /
 COPY --from=newemail-build /src/target/release/newemail /
+# we run newemail with the same uid:gid as nginx (101:101)
+# to make sure a unix socket is accessible for the reverse proxy
 RUN addgroup -S -g 101 nginx && \
   adduser -SDH -s /bin/false -G nginx -u 101 nginx
 USER 101:101
