@@ -60,6 +60,17 @@ FROM chatmaild-base AS lastlogin-run
 CMD ["/chatmaild.sh", "lastlogin", "chatmail-lastlogin", "lastlogin.socket"]
 # ---
 
+# update virtualenv for config generator
+FROM chatmaild-venv AS cmd-gen-venv
+COPY ./src/generate/requirements.txt /req.txt
+RUN /venv/bin/pip install --no-cache-dir -r /req.txt
+
+# run config+webpages generator
+FROM python-base AS generate-run
+COPY --from=cmd-gen-venv /venv /venv
+COPY ./src/generate/main.py /
+CMD ["/venv/bin/python3", "/main.py"]
+
 # temporary image for apk builds
 FROM alpine:$ALPINE_VER AS abuild-base
 RUN apk update && apk add --no-cache alpine-sdk git
