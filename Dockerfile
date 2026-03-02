@@ -18,6 +18,10 @@ RUN \
   add_ug 201 201 postfix /var/spool/postfix && \
   add_ug 202 202 opendkim /run/opendkim
 
+
+# -----
+# chatmaild images start
+
 # base image to build and run python modules
 # (deduplicates `apk add python3` operation)
 FROM run-base AS python-base
@@ -42,8 +46,8 @@ COPY ./src/temprundir.sh /
 COPY ./src/chatmaild.sh /
 USER $VMAIL_UID:$VMAIL_GID
 
-# run chatmaild services
 # ---
+# run chatmaild services
 FROM chatmaild-base AS metadata-run
 # usage: /chatmaild.sh <bin name> <rundir name> <socket filename>
 CMD ["/chatmaild.sh", "chatmail-metadata", "chatmail-metadata", "metadata.socket"]
@@ -65,6 +69,13 @@ FROM python-base AS generate-run
 COPY --from=generate-build /venv /venv
 COPY ./src/generate/main.py /
 CMD ["/venv/bin/python3", "/main.py"]
+
+# chatmaild images end
+# -----
+
+
+# -----
+# custom abuilds start (dovecot and opendkim)
 
 # temporary image for apk builds
 FROM alpine:$ALPINE_VER AS abuild-base
@@ -115,6 +126,13 @@ RUN apk add --no-cache --allow-untrusted ./*.apk
 WORKDIR /
 RUN rm -rf /pkg
 CMD ["/usr/sbin/opendkim", "-u", "opendkim", "-f"]
+
+# custom abuilds end
+# -----
+
+
+# -----
+# rust chatmail components start
 
 # temporary base image for rust builds
 # (deduplicates `apk add git` and rust image tag specifier)
@@ -203,3 +221,6 @@ RUN addgroup -S -g 101 nginx && \
   adduser -SDH -s /bin/false -G nginx -u 101 nginx
 USER 101:101
 CMD ["/temprundir.sh", "/run/newemail", "/newemail"]
+
+# rust chatmail components end
+# -----
