@@ -191,6 +191,6 @@ FROM alpine:$ALPINE_VER AS newemail-run
 COPY ./src/temprundir.sh /
 COPY --from=newemail-build /src/target/release/newemail /
 RUN addgroup -S -g 101 nginx && \
-  adduser -s /bin/false -G nginx -S -D -H -u 101 nginx
+  adduser -SDH -s /bin/false -G nginx -u 101 nginx
 USER 101:101
 CMD ["/temprundir.sh", "/run/newemail", "/newemail"]
