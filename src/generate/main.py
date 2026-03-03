@@ -43,13 +43,13 @@ def render_cfg(gc: GenCfg) -> None:
                 with src.open('rt', encoding='utf-8') as f:
                     tmpl = j2_env.from_string(f.read())
                 dst = cfg_dst / parent_rel / file.removesuffix('.j2')
-                mkdirs(dst)
+                _mkdirs(dst)
                 with dst.open('wt', encoding='utf-8') as f:
                     f.write(tmpl.render(**cmd_obj))
             else:
                 # simply copy the file
                 dst = cfg_dst / parent_rel / file
-                mkdirs(dst)
+                _mkdirs(dst)
                 shutil.copy(src, dst)
 
 
@@ -58,7 +58,7 @@ def render_web(gc: GenCfg) -> None:
     web_dst = gc.ins_dir / 'web'
 
     j2_env = Environment(loader=FileSystemLoader(web_src))
-    j2_env.filters['markdown'] = md2html
+    j2_env.filters['markdown'] = _md2html
     cmd_obj = gc.cmd.__dict__
 
     for parent, _, files in web_src.walk():
@@ -74,7 +74,7 @@ def render_web(gc: GenCfg) -> None:
             for file in files:
                 src = web_src / parent / file
                 dst = web_dst / parent_rel / file
-                mkdirs(dst)
+                _mkdirs(dst)
                 shutil.copy(src, dst)
         else:
             # render as page templates
@@ -85,12 +85,12 @@ def render_web(gc: GenCfg) -> None:
                     dst = dst.with_suffix('.html')
                 else:
                     dst = dst / 'index.html'
-                mkdirs(dst)
+                _mkdirs(dst)
                 with dst.open('wt', encoding='utf-8') as f:
                     f.write(tmpl.render(**cmd_obj))
 
 
-def md2html(value: str) -> str:
+def _md2html(value: str) -> str:
     return markdown(
         text=value,
         extensions=['fenced_code'],
@@ -99,7 +99,7 @@ def md2html(value: str) -> str:
     )
 
 
-def mkdirs(p: Path) -> None:
+def _mkdirs(p: Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
 
 
