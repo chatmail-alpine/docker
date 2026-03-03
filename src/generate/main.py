@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 from dataclasses import dataclass
+from typing import Iterable
 
 import chatmaild.config
 from jinja2 import Environment, FileSystemLoader
@@ -103,24 +104,60 @@ def _mkdirs(p: Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
 
 
+VMAIL_UG = 501, 501
+NGINX_UG = 101, 101
+POSTFIX_UG = 201, 201
+DKIM_UG = 202, 202
+
+@dataclass
+class GenDirectory:
+    name: str = ''
+    owner: int = VMAIL_UG[0]
+    group: int = VMAIL_UG[1]
+    mode: int = 0o755
+    contents: list['GenDirectory'] | None = None
+    path: Path | None = None
+
+
 def init_rundirs(gc: GenCfg) -> None:
-    lst = [
-        (501, 501, 'chatmail-lastlogin'),
-        (501, 501, 'chatmail-metadata'),
-        (501, 501, 'chatmail-turn'),
-        (501, 501, 'doveauth'),
-        (101, 101, 'newemail'),
-    ]
+    _init_dir(GenDirectory(
+        path=gc.ins_dir / 'socket',
+        owner=0,
+        group=0,
+        contents=[
+            GenDirectory('chatmail-lastlogin', *VMAIL_UG),
+            GenDirectory('chatmail-metadata', *VMAIL_UG),
+            GenDirectory('chatmail-turn', *VMAIL_UG),
+            GenDirectory('doveauth', *VMAIL_UG),
+            GenDirectory('newemail', *NGINX_UG),
+        ],
+    ))
 
-    sock_dir = gc.ins_dir / 'socket'
-    sock_dir.mkdir(mode=0o755, exist_ok=True)
 
-    for uid, gid, name in lst:
-        path = sock_dir / name
+def _init_dir(tree: GenDirectory) -> None:
+    root = tree.path
+    assert root is not None
+    root.mkdir(mode=tree.mode, exist_ok=True)
+    os.chown(root, tree.owner, tree.group)
+
+    stack: list[GenDirectory] = []
+
+    def _add_with_paths(it: Iterable[GenDirectory]) -> None:
+        if not it:
+            return
+        for i in it:
+            i.path = root / i.name
+            stack.append(i)
+
+    _add_with_paths(tree.contents)
+    while stack:
+        item = stack.pop()
+        path = item.path
         if path.exists():
             shutil.rmtree(path)
-        path.mkdir(mode=0o755, exist_ok=True)
-        os.chown(path, uid, gid)
+        path.mkdir(mode=item.mode)
+        os.chown(path, item.owner, item.group)
+        _add_with_paths(item.contents)
 
 
 if __name__ == '__main__':
