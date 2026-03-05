@@ -130,6 +130,7 @@ def init_rundirs(gc: GenCfg) -> None:
             GenDirectory('chatmail-turn', *VMAIL_UG),
             GenDirectory('doveauth', *VMAIL_UG),
             GenDirectory('newemail', *NGINX_UG),
+            GenDirectory('opendkim-postfix', *DKIM_UG, mode=0o750),
         ],
     ))
 
