@@ -120,7 +120,7 @@ class GenDirectory:
 
 
 def init_rundirs(gc: GenCfg) -> None:
-    _init_dir(GenDirectory(
+    _init_dir(rm=True, tree=GenDirectory(
         path=gc.ins_dir / 'socket',
         owner=0,
         group=0,
@@ -134,7 +134,7 @@ def init_rundirs(gc: GenCfg) -> None:
     ))
 
 
-def _init_dir(tree: GenDirectory) -> None:
+def _init_dir(tree: GenDirectory, rm: bool = False) -> None:
     root = tree.path
     assert root is not None
     root.mkdir(mode=tree.mode, exist_ok=True)
@@ -153,7 +153,7 @@ def _init_dir(tree: GenDirectory) -> None:
     while stack:
         item = stack.pop()
         path = item.path
-        if path.exists():
+        if rm and path.exists():
             shutil.rmtree(path)
         path.mkdir(mode=item.mode)
         os.chown(path, item.owner, item.group)
