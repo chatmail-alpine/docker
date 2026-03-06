@@ -16,6 +16,7 @@ class GenCfg:
     ins_dir: Path
     cmd: chatmaild.config.Config
     ready: Path
+    is_root: bool
 
     @classmethod
     def from_env(cls) -> 'GenCfg':
@@ -24,7 +25,8 @@ class GenCfg:
         cmd_path = ins_dir / 'chatmail.ini'
         cmd = chatmaild.config.read_config(cmd_path)
         ready = Path(os.getenv('READYFILE', '/ready'))
-        return cls(src_dir, ins_dir, cmd, ready)
+        is_root = os.getuid() == 0
+        return cls(src_dir, ins_dir, cmd, ready, is_root)
 
 
 def render_cfg(gc: GenCfg) -> None:
@@ -120,7 +122,7 @@ class GenDirectory:
 
 
 def init_rundirs(gc: GenCfg) -> None:
-    _init_dir(rm=True, tree=GenDirectory(
+    _init_dir(gc, rm=True, tree=GenDirectory(
         path=gc.ins_dir / 'socket',
         owner=0,
         group=0,
@@ -135,11 +137,11 @@ def init_rundirs(gc: GenCfg) -> None:
     ))
 
 
-def _init_dir(tree: GenDirectory, rm: bool = False) -> None:
+def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
     root = tree.path
     assert root is not None
     root.mkdir(mode=tree.mode, exist_ok=True)
-    os.chown(root, tree.owner, tree.group)
+    _chown_one(gc, root, tree.owner, tree.group)
 
     stack: list[GenDirectory] = []
 
@@ -157,8 +159,15 @@ def _init_dir(tree: GenDirectory, rm: bool = False) -> None:
         if rm and path.exists():
             shutil.rmtree(path)
         path.mkdir(mode=item.mode)
-        os.chown(path, item.owner, item.group)
+        _chown_one(gc, path, item.owner, item.group)
         _add_with_paths(item.contents)
+
+
+def _chown_one(gc: GenCfg, p: Path, uid: int, gid: int) -> None:
+    if gc.is_root:
+        os.chown(p, uid, gid)
+    else:
+        print(f'Skipping chown {uid}:{gid} "{p}"')
 
 
 if __name__ == '__main__':
