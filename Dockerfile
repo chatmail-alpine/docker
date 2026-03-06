@@ -125,7 +125,8 @@ COPY \
 RUN apk add --no-cache --allow-untrusted ./*.apk
 WORKDIR /
 RUN rm -rf /pkg
-CMD ["/usr/sbin/opendkim", "-u", "opendkim", "-f"]
+COPY ./src/opendkim.sh /
+CMD ["/opendkim.sh"]
 
 # custom abuilds end
 # -----
