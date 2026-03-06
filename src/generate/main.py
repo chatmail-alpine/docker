@@ -163,6 +163,14 @@ def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
         _add_with_paths(item.contents)
 
 
+def fix_cfg_perms(gc: GenCfg) -> None:
+    cfg_dst = gc.ins_dir / 'config'
+    for name in ['opendkim', 'dkimkeys']:
+        p = cfg_dst / name
+        p.chmod(0o750)
+        _chown_one(gc, p, *DKIM_UG)
+
+
 def _chown_one(gc: GenCfg, p: Path, uid: int, gid: int) -> None:
     if gc.is_root:
         os.chown(p, uid, gid)
@@ -175,4 +183,5 @@ if __name__ == '__main__':
     render_cfg(gc)
     render_web(gc)
     init_rundirs(gc)
+    fix_cfg_perms(gc)
     gc.ready.touch()
