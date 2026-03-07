@@ -15,7 +15,6 @@ class GenCfg:
     src_dir: Path
     ins_dir: Path
     cmd: chatmaild.config.Config
-    ready: Path
     is_root: bool
 
     @classmethod
@@ -24,9 +23,8 @@ class GenCfg:
         ins_dir = Path(os.getenv('INSDIR', '/instance'))
         cmd_path = ins_dir / 'chatmail.ini'
         cmd = chatmaild.config.read_config(cmd_path)
-        ready = Path(os.getenv('READYFILE', '/ready'))
         is_root = os.getuid() == 0
-        return cls(src_dir, ins_dir, cmd, ready, is_root)
+        return cls(src_dir, ins_dir, cmd, is_root)
 
 
 def render_cfg(gc: GenCfg) -> None:
@@ -189,4 +187,3 @@ if __name__ == '__main__':
     render_web(gc)
     init_rundirs(gc)
     fix_cfg_perms(gc)
-    gc.ready.touch()
