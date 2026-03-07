@@ -74,6 +74,12 @@ CMD ["/venv/bin/python3", "/main.py"]
 # -----
 
 
+# run postfix
+FROM run-base AS postfix-run
+RUN apk add --no-cache postfix
+CMD ["/usr/sbin/postfix", "start-fg"]
+
+
 # -----
 # custom abuilds start (dovecot and opendkim)
 
