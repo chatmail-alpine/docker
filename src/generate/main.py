@@ -137,6 +137,18 @@ def init_rundirs(gc: GenCfg) -> None:
     ))
 
 
+def fix_cfg_perms(gc: GenCfg) -> None:
+    _init_dir(gc, GenDirectory(
+        path=gc.ins_dir / 'config',
+        owner=0,
+        group=0,
+        contents=[
+            GenDirectory('opendkim', 0, DKIM_UG[1]),
+            GenDirectory('dkimkeys', *DKIM_UG, 0o750),
+        ],
+    ))
+
+
 def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
     root = tree.path
     assert root is not None
@@ -161,14 +173,6 @@ def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
         path.mkdir(mode=item.mode)
         _chown_one(gc, path, item.owner, item.group)
         _add_with_paths(item.contents)
-
-
-def fix_cfg_perms(gc: GenCfg) -> None:
-    cfg_dst = gc.ins_dir / 'config'
-    for name in ['opendkim', 'dkimkeys']:
-        p = cfg_dst / name
-        p.chmod(0o750)
-        _chown_one(gc, p, *DKIM_UG)
 
 
 def _chown_one(gc: GenCfg, p: Path, uid: int, gid: int) -> None:
