@@ -77,6 +77,7 @@ CMD ["/venv/bin/python3", "/main.py"]
 # run postfix
 FROM run-base AS postfix-run
 RUN apk add --no-cache postfix
+EXPOSE 25 465 587
 CMD ["/usr/sbin/postfix", "start-fg"]
 
 
@@ -110,6 +111,7 @@ COPY \
 RUN apk add --no-cache --allow-untrusted ./*.apk
 WORKDIR /
 RUN rm -rf /pkg
+EXPOSE 143 993
 CMD ["/usr/sbin/dovecot", "-F"]
 
 # build opendkim
