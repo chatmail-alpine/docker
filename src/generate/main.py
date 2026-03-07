@@ -184,6 +184,7 @@ def _chown_one(gc: GenCfg, p: Path, uid: int, gid: int) -> None:
 
 if __name__ == '__main__':
     gc = GenCfg.from_env()
+    gc.ins_dir.chmod(0o755)
     render_cfg(gc)
     render_web(gc)
     init_rundirs(gc)
