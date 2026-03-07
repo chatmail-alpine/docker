@@ -170,7 +170,7 @@ def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
         path = item.path
         if rm and path.exists():
             shutil.rmtree(path)
-        path.mkdir(mode=item.mode)
+        path.mkdir(mode=item.mode, exist_ok=True)
         _chown_one(gc, path, item.owner, item.group)
         _add_with_paths(item.contents)
 
