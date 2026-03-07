@@ -164,6 +164,7 @@ FROM scratch AS iroh-run
 COPY --from=iroh-build /src/target/optimized-release/iroh-relay /
 COPY --from=iroh-build /etc/min-passwd /etc/passwd
 COPY --from=iroh-build /etc/min-group /etc/group
+COPY ./src/iroh-relay.toml /config.toml
 USER 450:450
 CMD ["/iroh-relay", "--config-path", "/config.toml"]
 
