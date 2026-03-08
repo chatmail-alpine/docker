@@ -1,0 +1,119 @@
+services:
+  # initialize directories and configs
+  generate:
+    image: git.dc09.xyz/chatmail/generate:latest
+    volumes:
+      - ./instance:/instance
+      # - ./src/config:/template/config
+      # - ./src/web:/template/web
+
+  # TODO: nginx certbot cron
+
+  postfix:
+    image: git.dc09.xyz/chatmail/postfix:latest
+    restart: on-failure
+    ports:
+      - 25:25
+      - 465:465
+      - 587:587
+    volumes:
+      - &vol-vmail ./instance/data/vmail:/home/vmail
+      - &vol-postfix ./instance/data/postfix:/var/spool/postfix
+      - ./instance/config/postfix:/etc/postfix:ro
+      - &vol-dkim ./instance/socket/opendkim-postfix:/var/spool/postfix/opendkim
+    depends_on:
+      generate: &dep-exit0
+        condition: service_completed_successfully
+      dovecot:
+      opendkim:
+      filtermail:
+      filtermail-incoming:
+
+  dovecot:
+    image: git.dc09.xyz/chatmail/dovecot:latest
+    restart: on-failure
+    ports:
+      - 143:143
+      - 993:993
+    volumes:
+      - *vol-vmail
+      - *vol-postfix
+      - ./instance/config/dovecot:/etc/dovecot:ro
+      - &vol-metadata ./instance/socket/metadata:/run/chatmail-metadata
+      - &vol-lastlogin ./instance/socket/lastlogin:/run/chatmail-lastlogin
+      - &vol-doveauth ./instance/socket/doveauth:/run/doveauth
+    depends_on:
+      generate: *dep-exit0
+      metadata:
+      lastlogin:
+      doveauth:
+
+  opendkim:
+    image: git.dc09.xyz/chatmail/opendkim:latest
+    restart: on-failure
+    volumes:
+      - ./instance/config/opendkim:/etc/opendkim
+      - ./instance/config/dkimkeys:/etc/dkimkeys
+      - *vol-dkim
+    depends_on:
+      generate: *dep-exit0
+
+  filtermail:
+    image: git.dc09.xyz/chatmail/filtermail:latest
+    restart: on-failure
+    volumes:
+      - *vol-vmail
+      - &vol-ini ./instance/chatmail.ini:/etc/chatmail.ini:ro
+
+  filtermail-incoming:
+    image: git.dc09.xyz/chatmail/filtermail-incoming:latest
+    restart: on-failure
+    volumes:
+      - *vol-vmail
+      - *vol-ini
+
+  metadata:
+    image: git.dc09.xyz/chatmail/metadata:latest
+    restart: on-failure
+    volumes:
+      - *vol-vmail
+      - *vol-ini
+      - *vol-metadata
+      - &vol-turn ./instance/socket/chatmail-turn:/run/chatmail-turn
+
+  lastlogin:
+    image: git.dc09.xyz/chatmail/lastlogin:latest
+    restart: on-failure
+    volumes:
+      - *vol-vmail
+      - *vol-ini
+      - *vol-lastlogin
+
+  doveauth:
+    image: git.dc09.xyz/chatmail/doveauth:latest
+    restart: on-failure
+    volumes:
+      - *vol-vmail
+      - *vol-ini
+      - *vol-doveauth
+
+  newemail:
+    image: git.dc09.xyz/chatmail/newemail:latest
+    restart: on-failure
+    volumes:
+      - *vol-ini
+      - ./instance/socket/newemail:/run/newemail
+
+  chatmail-turn:
+    image: git.dc09.xyz/chatmail/turn:latest
+    restart: on-failure
+    network_mode: host  # allocates random ports for TURN
+    volumes:
+      - *vol-ini
+      - *vol-turn
+
+  iroh-relay:
+    image: git.dc09.xyz/chatmail/iroh-relay:latest
+    restart: on-failure
+    # ports:
+    #   - 127.0.0.1:3340:3340
