@@ -147,6 +147,19 @@ def fix_cfg_perms(gc: GenCfg) -> None:
     ))
 
 
+def init_datadirs(gc: GenCfg) -> None:
+    _init_dir(gc, GenDirectory(
+        path=gc.ins_dir / 'data',
+        owner=0,
+        group=0,
+        contents=[
+            GenDirectory('vmail'),
+            GenDirectory('postfix', 0, 0),
+            GenDirectory('certbot', 0, 0, 0o750),
+        ],
+    ))
+
+
 def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
     root = tree.path
     assert root is not None
@@ -187,3 +200,4 @@ if __name__ == '__main__':
     render_web(gc)
     init_rundirs(gc)
     fix_cfg_perms(gc)
+    init_datadirs(gc)
