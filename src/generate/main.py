@@ -125,8 +125,8 @@ def init_rundirs(gc: GenCfg) -> None:
         owner=0,
         group=0,
         contents=[
-            GenDirectory('chatmail-lastlogin'),
-            GenDirectory('chatmail-metadata'),
+            GenDirectory('lastlogin'),
+            GenDirectory('metadata'),
             GenDirectory('chatmail-turn'),
             GenDirectory('doveauth'),
             GenDirectory('newemail', *NGINX_UG),
