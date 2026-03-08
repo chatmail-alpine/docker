@@ -4,8 +4,8 @@ services:
     image: git.dc09.xyz/chatmail/generate:latest
     volumes:
       - ./instance:/instance
-      # - ./src/config:/template/config
-      # - ./src/web:/template/web
+      # - ./src/config:/template/config:ro
+      # - ./src/web:/template/web:ro
 
   # TODO: nginx certbot cron
 
