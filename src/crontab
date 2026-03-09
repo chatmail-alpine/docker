@@ -1,0 +1,3 @@
+# min hour day month weekday cmd
+2 0 * * * /venv/bin/chatmail-expire /etc/chatmail.ini -v --remove
+2 8 * * * /venv/bin/chatmail-fsreport /etc/chatmail.ini

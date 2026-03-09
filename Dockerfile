@@ -59,6 +59,13 @@ FROM chatmaild-base AS lastlogin-run
 CMD ["/chatmaild.sh", "lastlogin", "chatmail-lastlogin", "lastlogin.socket"]
 # ---
 
+# run chatmail-expire and fsreport
+FROM chatmaild-base AS cron-run
+WORKDIR /cron
+COPY ./src/crontab /cron/vmail
+USER root:root  # required for crond
+CMD ["/usr/sbin/crond", "-f", "-L", "/dev/stdout", "-c", "/cron"]
+
 # update virtualenv for config generator
 FROM chatmaild-build AS generate-build
 COPY ./src/generate/requirements.txt /req.txt

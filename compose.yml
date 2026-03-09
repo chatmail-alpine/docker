@@ -104,6 +104,13 @@ services:
       - *vol-ini
       - ./instance/socket/newemail:/run/newemail
 
+  cron:
+    image: git.dc09.xyz/chatmail/cron:latest
+    restart: on-failure
+    volumes:
+      - *vol-vmail
+      - *vol-ini
+
   chatmail-turn:
     image: git.dc09.xyz/chatmail/turn:latest
     restart: on-failure
