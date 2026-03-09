@@ -34,7 +34,7 @@ RUN apk add --no-cache py3-virtualenv python3-dev musl-dev gcc git
 RUN python3 -m venv /venv
 RUN git clone \
   --single-branch --depth 1 \
-  --revision dbd5cd16f5d8d849120bcac60c139b9bff68374a \
+  --revision ff541b81ea35f403ad960604dd4fc8b5427f64ba \
   https://github.com/chatmail/relay.git \
   /src
 RUN /venv/bin/pip install --no-cache-dir /src/chatmaild
