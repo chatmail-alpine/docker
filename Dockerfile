@@ -197,7 +197,7 @@ RUN git clone \
   --revision 977af0152234691bc267071a2737e5625d8b9577 \
   https://github.com/chatmail/filtermail.git \
   /src
-RUN cargo build --profile dist
+RUN cargo build --release
 ARG VMAIL_UID
 ARG VMAIL_GID
 RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
@@ -205,7 +205,7 @@ RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
 
 # base image for filtermail
 FROM scratch AS filtermail-base
-COPY --from=filtermail-build /src/target/dist/filtermail /
+COPY --from=filtermail-build /src/target/release/filtermail /
 COPY --from=filtermail-build /etc/min-passwd /etc/passwd
 COPY --from=filtermail-build /etc/min-group /etc/group
 USER $VMAIL_UID:$VMAIL_GID
