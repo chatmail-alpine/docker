@@ -203,20 +203,13 @@ ARG VMAIL_GID
 RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
   echo "vmail:x:$VMAIL_GID:" >/etc/min-group
 
-# base image for filtermail
-FROM scratch AS filtermail-base
+# run filtermail
+FROM scratch AS filtermail-run
 COPY --from=filtermail-build /src/target/release/filtermail /
 COPY --from=filtermail-build /etc/min-passwd /etc/passwd
 COPY --from=filtermail-build /etc/min-group /etc/group
 USER $VMAIL_UID:$VMAIL_GID
-
-# run filtermail for outgoing mail
-FROM filtermail-base AS filtermail-out-run
-CMD ["/filtermail", "/etc/chatmail.ini", "outgoing"]
-
-# run filtermail for incoming mail
-FROM filtermail-base AS filtermail-in-run
-CMD ["/filtermail", "/etc/chatmail.ini", "incoming"]
+ENTRYPOINT ["/filtermail", "/etc/chatmail.ini"]
 
 # build newemail
 FROM rust-base AS newemail-build

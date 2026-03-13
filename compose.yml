@@ -61,13 +61,15 @@ services:
   filtermail:
     image: git.dc09.xyz/chatmail/filtermail:latest
     restart: on-failure
+    command: outgoing
     volumes:
       - *vol-vmail
       - &vol-ini ./instance/chatmail.ini:/etc/chatmail.ini:ro
 
   filtermail-incoming:
-    image: git.dc09.xyz/chatmail/filtermail-incoming:latest
+    image: git.dc09.xyz/chatmail/filtermail:latest
     restart: on-failure
+    command: incoming
     volumes:
       - *vol-vmail
       - *vol-ini
