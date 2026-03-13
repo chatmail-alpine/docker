@@ -194,10 +194,8 @@ CMD ["/turn.sh"]
 FROM rust-base AS filtermail-build
 WORKDIR /src
 RUN git clone \
-  --revision b982dc5577b44ce1c0ca5bac2106bc944a273eda \
-  # filtermail hardcodes postfix host to localhost,
-  # so we use a soft-fork
-  https://git.dc09.xyz/chatmail/filtermail.git \
+  --revision 977af0152234691bc267071a2737e5625d8b9577 \
+  https://github.com/chatmail/filtermail.git \
   /src
 RUN cargo build --profile dist
 ARG VMAIL_UID
@@ -211,8 +209,6 @@ COPY --from=filtermail-build /src/target/dist/filtermail /
 COPY --from=filtermail-build /etc/min-passwd /etc/passwd
 COPY --from=filtermail-build /etc/min-group /etc/group
 USER $VMAIL_UID:$VMAIL_GID
-# these env vars are available in the fork (see above)
-ENV HOST_LISTEN=0.0.0.0 HOST_POSTFIX=postfix
 
 # run filtermail for outgoing mail
 FROM filtermail-base AS filtermail-out-run
