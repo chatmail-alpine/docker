@@ -24,10 +24,11 @@ services:
     depends_on:
       generate: &dep-exit0
         condition: service_completed_successfully
-      dovecot:
-      opendkim:
-      filtermail:
-      filtermail-incoming:
+      dovecot: &dep-start
+        condition: service_started
+      opendkim: *dep-start
+      filtermail: *dep-start
+      filtermail-incoming: *dep-start
 
   dovecot:
     image: git.dc09.xyz/chatmail/dovecot:latest
@@ -44,9 +45,9 @@ services:
       - &vol-doveauth ./instance/socket/doveauth:/run/doveauth
     depends_on:
       generate: *dep-exit0
-      metadata:
-      lastlogin:
-      doveauth:
+      metadata: *dep-start
+      lastlogin: *dep-start
+      doveauth: *dep-start
 
   opendkim:
     image: git.dc09.xyz/chatmail/opendkim:latest
