@@ -56,7 +56,7 @@ services:
       - ./instance/config/opendkim:/etc/opendkim
       - ./instance/config/dkimkeys:/etc/dkimkeys
       - *vol-dkim
-    depends_on:
+    depends_on: &deps-gen
       generate: *dep-exit0
 
   filtermail:
@@ -66,6 +66,7 @@ services:
     volumes:
       - *vol-vmail
       - &vol-ini ./instance/chatmail.ini:/etc/chatmail.ini:ro
+    depends_on: *deps-gen
 
   filtermail-incoming:
     image: git.dc09.xyz/chatmail/filtermail:latest
@@ -74,6 +75,7 @@ services:
     volumes:
       - *vol-vmail
       - *vol-ini
+    depends_on: *deps-gen
 
   metadata:
     image: git.dc09.xyz/chatmail/metadata:latest
@@ -83,6 +85,7 @@ services:
       - *vol-ini
       - *vol-metadata
       - &vol-turn ./instance/socket/chatmail-turn:/run/chatmail-turn
+    depends_on: *deps-gen
 
   lastlogin:
     image: git.dc09.xyz/chatmail/lastlogin:latest
@@ -91,6 +94,7 @@ services:
       - *vol-vmail
       - *vol-ini
       - *vol-lastlogin
+    depends_on: *deps-gen
 
   doveauth:
     image: git.dc09.xyz/chatmail/doveauth:latest
@@ -99,6 +103,7 @@ services:
       - *vol-vmail
       - *vol-ini
       - *vol-doveauth
+    depends_on: *deps-gen
 
   newemail:
     image: git.dc09.xyz/chatmail/newemail:latest
@@ -113,6 +118,7 @@ services:
     volumes:
       - *vol-vmail
       - *vol-ini
+    depends_on: *deps-gen
 
   chatmail-turn:
     image: git.dc09.xyz/chatmail/turn:latest
