@@ -125,7 +125,7 @@ services:
     restart: on-failure
     network_mode: host  # allocates random ports for TURN
     volumes:
-      - *vol-ini
+      - ./instance/config/domain:/domain:ro
       - *vol-turn
 
   iroh-relay:
