@@ -15,6 +15,7 @@ RUN <<EOF
     adduser -SDH -h "$homedir" -s /bin/false -G "$name" -u "$uid" "$name"
   }
   add_ug $VMAIL_UID $VMAIL_GID vmail /home/vmail
+  add_ug 101 101 nginx /var/lib/nginx
   add_ug 201 201 postfix /var/spool/postfix
   add_ug 202 202 opendkim /run/opendkim
 EOF
@@ -207,14 +208,10 @@ RUN git clone -b v1.1.0 https://git.dc09.xyz/chatmail/newemail.git /src
 RUN cargo build --release
 
 # run newemail
-FROM alpine:$ALPINE_VER AS newemail-run
+FROM run-base AS newemail-run
 COPY --from=newemail-build /src/target/release/newemail /
 COPY ./src/temprundir.sh /
-# we run newemail with the same uid:gid as nginx (101:101)
-# to make sure a unix socket is accessible for the reverse proxy
-RUN addgroup -S -g 101 nginx && \
-  adduser -SDH -s /bin/false -G nginx -u 101 nginx
-USER 101:101
+USER nginx:nginx
 CMD ["/temprundir.sh", "/run/newemail", "/newemail"]
 
 # rust chatmail components end
