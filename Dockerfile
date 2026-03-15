@@ -1,23 +1,18 @@
 ARG ALPINE_VER=3.23
 ARG RUST_VER=1.93
 
-ARG VMAIL_UID=501
-ARG VMAIL_GID=501
-
 # base alpine image for final stages
 FROM alpine:$ALPINE_VER AS run-base
-ARG VMAIL_UID
-ARG VMAIL_GID
 RUN <<EOF
   add_ug () {
     local uid="$1" gid="$2" name="$3" homedir="$4"
     addgroup -S -g "$gid" "$name"
     adduser -SDH -h "$homedir" -s /bin/false -G "$name" -u "$uid" "$name"
   }
-  add_ug $VMAIL_UID $VMAIL_GID vmail /home/vmail
   add_ug 101 101 nginx /var/lib/nginx
   add_ug 201 201 postfix /var/spool/postfix
   add_ug 202 202 opendkim /run/opendkim
+  add_ug 501 501 vmail /home/vmail
 EOF
 
 
@@ -188,16 +183,10 @@ RUN git clone \
   https://github.com/chatmail/filtermail.git \
   /src
 RUN cargo build --release
-ARG VMAIL_UID
-ARG VMAIL_GID
-RUN echo "vmail:x:$VMAIL_UID:$VMAIL_GID::/:/bin/false" >/etc/min-passwd && \
-  echo "vmail:x:$VMAIL_GID:" >/etc/min-group
 
 # run filtermail
-FROM scratch AS filtermail-run
+FROM run-base AS filtermail-run
 COPY --from=filtermail-build /src/target/release/filtermail /
-COPY --from=filtermail-build /etc/min-passwd /etc/passwd
-COPY --from=filtermail-build /etc/min-group /etc/group
 USER vmail:vmail
 ENTRYPOINT ["/filtermail", "/etc/chatmail.ini"]
 
