@@ -45,7 +45,7 @@ RUN /venv/bin/pip install --no-cache-dir /src/chatmaild
 FROM python-base AS chatmaild-base
 COPY --from=chatmaild-build /venv /venv
 COPY ./src/temprundir.sh ./src/chatmaild.sh /
-USER $VMAIL_UID:$VMAIL_GID
+USER vmail:vmail
 
 # ---
 # run chatmaild services
@@ -176,7 +176,7 @@ RUN cargo build --release
 FROM run-base AS turn-run
 COPY --from=turn-build /src/target/release/chatmail-turn /
 COPY ./src/temprundir.sh ./src/turn.sh /
-USER $VMAIL_UID:$VMAIL_GID
+USER vmail:vmail
 EXPOSE 3478/udp
 CMD ["/turn.sh"]
 
@@ -198,7 +198,7 @@ FROM scratch AS filtermail-run
 COPY --from=filtermail-build /src/target/release/filtermail /
 COPY --from=filtermail-build /etc/min-passwd /etc/passwd
 COPY --from=filtermail-build /etc/min-group /etc/group
-USER $VMAIL_UID:$VMAIL_GID
+USER vmail:vmail
 ENTRYPOINT ["/filtermail", "/etc/chatmail.ini"]
 
 # build newemail
