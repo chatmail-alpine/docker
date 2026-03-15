@@ -8,15 +8,16 @@ ARG VMAIL_GID=501
 FROM alpine:$ALPINE_VER AS run-base
 ARG VMAIL_UID
 ARG VMAIL_GID
-RUN \
-  add_ug () { \
-    local uid="$1" gid="$2" name="$3" homedir="$4" && \
-    addgroup -S -g "$gid" "$name" && \
-    adduser -SDH -h "$homedir" -s /bin/false -G "$name" -u "$uid" "$name"; \
-  } && \
-  add_ug $VMAIL_UID $VMAIL_GID vmail /home/vmail && \
-  add_ug 201 201 postfix /var/spool/postfix && \
+RUN <<EOF
+  add_ug () {
+    local uid="$1" gid="$2" name="$3" homedir="$4"
+    addgroup -S -g "$gid" "$name"
+    adduser -SDH -h "$homedir" -s /bin/false -G "$name" -u "$uid" "$name"
+  }
+  add_ug $VMAIL_UID $VMAIL_GID vmail /home/vmail
+  add_ug 201 201 postfix /var/spool/postfix
   add_ug 202 202 opendkim /run/opendkim
+EOF
 
 
 # -----
