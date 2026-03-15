@@ -42,8 +42,7 @@ RUN /venv/bin/pip install --no-cache-dir /src/chatmaild
 # base image to run chatmaild
 FROM python-base AS chatmaild-base
 COPY --from=chatmaild-build /venv /venv
-COPY ./src/temprundir.sh /
-COPY ./src/chatmaild.sh /
+COPY ./src/temprundir.sh ./src/chatmaild.sh /
 USER $VMAIL_UID:$VMAIL_GID
 
 # ---
@@ -183,9 +182,8 @@ RUN cargo build --release
 
 # run chatmail-turn
 FROM run-base AS turn-run
-COPY ./src/temprundir.sh /
-COPY ./src/turn.sh /
 COPY --from=turn-build /src/target/release/chatmail-turn /
+COPY ./src/temprundir.sh ./src/turn.sh /
 USER $VMAIL_UID:$VMAIL_GID
 EXPOSE 3478/udp
 CMD ["/turn.sh"]
@@ -219,8 +217,8 @@ RUN cargo build --release
 
 # run newemail
 FROM alpine:$ALPINE_VER AS newemail-run
-COPY ./src/temprundir.sh /
 COPY --from=newemail-build /src/target/release/newemail /
+COPY ./src/temprundir.sh /
 # we run newemail with the same uid:gid as nginx (101:101)
 # to make sure a unix socket is accessible for the reverse proxy
 RUN addgroup -S -g 101 nginx && \
