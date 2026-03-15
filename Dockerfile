@@ -68,8 +68,8 @@ CMD ["/usr/sbin/crond", "-f", "-L", "/dev/stdout", "-c", "/cron"]
 
 # update virtualenv for config generator
 FROM chatmaild-build AS generate-build
-COPY ./src/generate/requirements.txt /req.txt
-RUN /venv/bin/pip install --no-cache-dir -r /req.txt
+RUN --mount=type=bind,source=./src/generate/requirements.txt,target=/req.txt \
+  /venv/bin/pip install --no-cache-dir -r /req.txt
 
 # run config+webpages generator
 FROM python-base AS generate-run
@@ -106,18 +106,13 @@ RUN abuild -C chatmail/dovecot -Fr
 
 # run dovecot
 FROM run-base AS dovecot-run
-WORKDIR /pkg
-COPY \
-  --from=dovecot-build \
-    /pkg/chatmail/x86_64/dovecot-2.3.*.apk \
-    /pkg/chatmail/x86_64/dovecot-lmtpd-2.3.*.apk \
-    /pkg/chatmail/x86_64/dovecot-lua-2.3.*.apk \
-  ./
-# --allow-untrusted is safe since we build packages locally
-# copying repo keys brings unnecessary complexity
-RUN apk add --no-cache --allow-untrusted ./*.apk
-WORKDIR /
-RUN rm -rf /pkg
+# --allow-untrusted is safe since we build packages locally;
+# copying repo keys brings in unnecessary complexity
+RUN --mount=type=bind,from=dovecot-build,source=/pkg/chatmail/x86_64,target=/tmp/pkg \
+  apk add --no-cache --allow-untrusted \
+    /tmp/pkg/dovecot-2.3.*.apk \
+    /tmp/pkg/dovecot-lmtpd-2.3.*.apk \
+    /tmp/pkg/dovecot-lua-2.3.*.apk
 EXPOSE 143 993
 CMD ["/usr/sbin/dovecot", "-F"]
 
@@ -129,17 +124,12 @@ RUN abuild -C chatmail/opendkim -Fr
 
 # run opendkim
 FROM run-base AS opendkim-run
-WORKDIR /pkg
-COPY \
-  --from=opendkim-build \
-    /pkg/chatmail/x86_64/opendkim-2.11.*.apk \
-    /pkg/chatmail/x86_64/opendkim-libs-2.11.*.apk \
-    /pkg/chatmail/x86_64/opendkim-utils-2.11.*.apk \
-  ./
 # see note on --allow-untrusted above
-RUN apk add --no-cache --allow-untrusted ./*.apk
-WORKDIR /
-RUN rm -rf /pkg
+RUN --mount=type=bind,from=opendkim-build,source=/pkg/chatmail/x86_64,target=/tmp/pkg \
+  apk add --no-cache --allow-untrusted \
+    /tmp/pkg/opendkim-2.11.*.apk \
+    /tmp/pkg/opendkim-libs-2.11.*.apk \
+    /tmp/pkg/opendkim-utils-2.11.*.apk
 COPY ./src/opendkim.sh /
 CMD ["/opendkim.sh"]
 
