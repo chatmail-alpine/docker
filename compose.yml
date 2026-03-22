@@ -7,7 +7,18 @@ services:
       # - ./src/config:/template/config:ro
       # - ./src/web:/template/web:ro
 
-  # TODO: nginx certbot cron
+  nginx:
+    image: git.dc09.xyz/chatmail/nginx:latest
+    restart: on-failure
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./instance/config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - &vol-newemail ./instance/socket/newemail:/run/newemail
+    depends_on: &deps-gen
+      generate: &dep-exit0
+        condition: service_completed_successfully
 
   postfix:
     image: git.dc09.xyz/chatmail/postfix:latest
@@ -22,8 +33,7 @@ services:
       - ./instance/config/postfix:/etc/postfix:ro
       - &vol-dkim ./instance/socket/opendkim-postfix:/var/spool/postfix/opendkim
     depends_on:
-      generate: &dep-exit0
-        condition: service_completed_successfully
+      generate: *dep-exit0
       dovecot: &dep-start
         condition: service_started
       opendkim: *dep-start
@@ -56,8 +66,7 @@ services:
       - ./instance/config/opendkim:/etc/opendkim
       - ./instance/config/dkimkeys:/etc/dkimkeys
       - *vol-dkim
-    depends_on: &deps-gen
-      generate: *dep-exit0
+    depends_on: *deps-gen
 
   filtermail:
     image: git.dc09.xyz/chatmail/filtermail:latest
@@ -110,7 +119,7 @@ services:
     restart: on-failure
     volumes:
       - *vol-ini
-      - ./instance/socket/newemail:/run/newemail
+      - *vol-newemail
 
   cron:
     image: git.dc09.xyz/chatmail/cron:latest

@@ -77,6 +77,12 @@ CMD ["/venv/bin/python3", "/main.py"]
 # -----
 
 
+# run nginx
+FROM run-base AS nginx-run
+RUN apk add --no-cache nginx nginx-mod-stream
+EXPOSE 80 443
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
+
 # run postfix
 FROM run-base AS postfix-run
 RUN apk add --no-cache postfix

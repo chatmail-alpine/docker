@@ -1,0 +1,101 @@
+load_module modules/ngx_stream_module.so;
+
+user nginx;
+worker_processes auto;
+worker_rlimit_nofile 2048;
+
+pcre_jit on;
+
+error_log stderr warn;
+
+events {
+  worker_connections 2048;
+}
+
+stream {
+  map $ssl_preread_alpn_protocols $proxy {
+    default unix:/run/nginx.sock;
+    ~\bsmtp\b 127.0.0.1:465;
+    ~\bimap\b 127.0.0.1:993;
+  }
+
+  server {
+    listen 443;
+    listen [::]:443;
+    ssl_preread on;
+    proxy_pass $proxy;
+  }
+}
+
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+
+  server_tokens off;
+
+  sendfile on;
+  tcp_nopush on;
+
+  gzip on;
+
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers on;
+  ssl_certificate {{ tls_cert_path }};
+  ssl_certificate_key {{ tls_key_path }};
+
+  server {
+    listen 80;
+    listen [::]:80;
+    server_name {{ mail_domain }} www.{{ mail_domain }} mta-sts.{{ mail_domain }};
+
+    location / {
+      return 301 https://$host$request_uri;
+    }
+
+    location /.well-known/acme-challenge/ {
+      alias /var/www/certbot/;
+    }
+  }
+
+  server {
+    listen unix:/run/nginx.sock ssl default_server;
+    server_name {{ mail_domain }} mta-sts.{{ mail_domain }};
+    root /var/www/chatmail;
+    index index.html;
+
+    location / {
+      try_files $uri $uri/ =404;
+    }
+
+    location /new {
+      if ($request_method = GET) {
+        return 301 dcaccount:https://{{ mail_domain }}/new;
+      }
+      proxy_pass http://unix:/run/newemail/actix.sock;
+      proxy_http_version 1.1;
+    }
+
+    location /relay {
+      proxy_pass http://iroh-relay:3340;
+      proxy_http_version 1.1;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Upgrade $http_upgrade;
+    }
+
+    location /relay/probe {
+      proxy_pass http://iroh-relay:3340;
+      proxy_http_version 1.1;
+    }
+
+    location /generate_204 {
+      proxy_pass http://iroh-relay:3340;
+      proxy_http_version 1.1;
+    }
+  }
+
+  server {
+    listen unix:/run/nginx.sock ssl;
+    server_name www.{{ mail_domain }};
+    return 301 https://{{ mail_domain }}$request_uri;
+  }
+}
