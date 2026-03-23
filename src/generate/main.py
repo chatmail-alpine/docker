@@ -45,27 +45,28 @@ def render_cfg(gc: GenCfg) -> None:
     for parent, _, files in cfg_src.walk():
         for file in files:
             src = parent / file
-            parent_rel = parent.relative_to(cfg_src)
-            if file.endswith('.j2'):
+            src_rel = src.relative_to(cfg_src)
+            ext = src.suffix
+            if ext == '.j2':
                 # render the template
                 _render_j2(
                     src=src,
                     # we put rendered cfg.j2 into cfg
-                    dst=cfg_src / parent_rel / file.removesuffix('.j2'),
+                    dst=cfg_src / src_rel.with_suffix(''),
                     ctx=cmd_obj,
                 )
-            elif file.endswith('.no-tls'):
+            elif ext == '.no-tls':
                 # same but add no_tls=true into template context
                 _render_j2(
                     # actual tmpl for cfg.no-tls is cfg.j2
                     src=src.with_suffix('.j2'),
                     # we put rendered cfg.no-tls into cfg.no-tls
-                    dst=cfg_dst / parent_rel / file,
+                    dst=cfg_dst / src_rel,
                     ctx={**cmd_obj, 'no_tls': True},
                 )
             else:
                 # simply copy the file
-                dst = cfg_dst / parent_rel / file
+                dst = cfg_dst / src_rel
                 _mkdirs(dst)
                 shutil.copy(src, dst)
 
