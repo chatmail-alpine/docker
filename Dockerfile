@@ -87,8 +87,9 @@ CMD ["/nginx.sh"]
 # run postfix
 FROM run-base AS postfix-run
 RUN apk add --no-cache postfix
+COPY ./src/tls-watch.lib.sh ./src/postfix.sh /
 EXPOSE 25 465 587
-CMD ["/usr/sbin/postfix", "start-fg"]
+CMD ["/postfix.sh"]
 
 
 # -----
@@ -116,8 +117,9 @@ RUN --mount=type=bind,from=dovecot-build,source=/pkg/chatmail/x86_64,target=/tmp
     /tmp/pkg/dovecot-2.3.*.apk \
     /tmp/pkg/dovecot-lmtpd-2.3.*.apk \
     /tmp/pkg/dovecot-lua-2.3.*.apk
+COPY ./src/tls-watch.lib.sh ./src/dovecot.sh /
 EXPOSE 143 993
-CMD ["/usr/sbin/dovecot", "-F"]
+CMD ["/dovecot.sh"]
 
 # build opendkim
 FROM abuild-base AS opendkim-build
