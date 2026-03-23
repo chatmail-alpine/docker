@@ -15,6 +15,7 @@ services:
       - 443:443
     volumes:
       - ./instance/config/nginx:/etc/nginx:ro
+      - &vol-tls ./instance/config/tls:/tls:ro
       - &vol-newemail ./instance/socket/newemail:/run/newemail
     depends_on: &deps-gen
       generate: &dep-exit0
@@ -31,6 +32,7 @@ services:
       - &vol-vmail ./instance/data/vmail:/home/vmail
       - &vol-postfix ./instance/data/postfix:/var/spool/postfix
       - ./instance/config/postfix:/etc/postfix:ro
+      - *vol-tls
       - &vol-dkim ./instance/socket/opendkim-postfix:/var/spool/postfix/opendkim
     depends_on:
       generate: *dep-exit0
@@ -50,6 +52,7 @@ services:
       - *vol-vmail
       - *vol-postfix
       - ./instance/config/dovecot:/etc/dovecot:ro
+      - *vol-tls
       - &vol-metadata ./instance/socket/metadata:/run/chatmail-metadata
       - &vol-lastlogin ./instance/socket/lastlogin:/run/chatmail-lastlogin
       - &vol-doveauth ./instance/socket/doveauth:/run/doveauth

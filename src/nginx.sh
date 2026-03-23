@@ -2,8 +2,8 @@
 
 global_ngx_cfg='daemon off;'
 
-tls_cert=$(head -n 1 /cert-path)
-tls_key=$(tail -n 1 /cert-path)
+tls_cert=$(head -n 1 /tls/path)
+tls_key=$(tail -n 1 /tls/path)
 tls_watch=$(dirname "$tls_key")
 
 if [ ! -f "$tls_key" ]; then
