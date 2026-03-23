@@ -52,7 +52,7 @@ def render_cfg(gc: GenCfg) -> None:
                 _render_j2(
                     src=src,
                     # we put rendered cfg.j2 into cfg
-                    dst=cfg_src / src_rel.with_suffix(''),
+                    dst=cfg_dst / src_rel.with_suffix(''),
                     ctx=cmd_obj,
                 )
             elif ext == '.no-tls':
