@@ -40,8 +40,10 @@ http {
 
   ssl_protocols TLSv1.2 TLSv1.3;
   ssl_prefer_server_ciphers on;
+  {% if not no_tls -%}
   ssl_certificate {{ tls_cert_path }};
   ssl_certificate_key {{ tls_key_path }};
+  {%- endif %}
 
   server {
     listen 80;
@@ -57,6 +59,7 @@ http {
     }
   }
 
+  {% if not no_tls -%}
   server {
     listen unix:/run/nginx.sock ssl default_server;
     server_name {{ mail_domain }} mta-sts.{{ mail_domain }};
@@ -98,4 +101,5 @@ http {
     server_name www.{{ mail_domain }};
     return 301 https://{{ mail_domain }}$request_uri;
   }
+  {%- endif %}
 }
