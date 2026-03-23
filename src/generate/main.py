@@ -35,18 +35,34 @@ def render_cfg(gc: GenCfg) -> None:
     cfg_src = gc.src_dir / 'config'
     cfg_dst = gc.ins_dir / 'config'
 
+    def _render_j2(src: Path, dst: Path, ctx: dict[str, object]) -> None:
+        with src.open('rt', encoding='utf-8') as f:
+            tmpl = j2_env.from_string(f.read())
+        _mkdirs(dst)
+        with dst.open('wt', encoding='utf-8') as f:
+            f.write(tmpl.render(**ctx))
+
     for parent, _, files in cfg_src.walk():
         for file in files:
             src = parent / file
             parent_rel = parent.relative_to(cfg_src)
             if file.endswith('.j2'):
                 # render the template
-                with src.open('rt', encoding='utf-8') as f:
-                    tmpl = j2_env.from_string(f.read())
-                dst = cfg_dst / parent_rel / file.removesuffix('.j2')
-                _mkdirs(dst)
-                with dst.open('wt', encoding='utf-8') as f:
-                    f.write(tmpl.render(**cmd_obj))
+                _render_j2(
+                    src=src,
+                    # we put rendered cfg.j2 into cfg
+                    dst=cfg_src / parent_rel / file.removesuffix('.j2'),
+                    ctx=cmd_obj,
+                )
+            elif file.endswith('.no-tls'):
+                # same but add no_tls=true into template context
+                _render_j2(
+                    # actual tmpl for cfg.no-tls is cfg.j2
+                    src=src.with_suffix('.j2'),
+                    # we put rendered cfg.no-tls into cfg.no-tls
+                    dst=cfg_dst / parent_rel / file,
+                    ctx={**cmd_obj, 'no_tls': True},
+                )
             else:
                 # simply copy the file
                 dst = cfg_dst / parent_rel / file
