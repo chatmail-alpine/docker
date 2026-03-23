@@ -158,6 +158,7 @@ def fix_cfg_perms(gc: GenCfg) -> None:
         owner=0,
         group=0,
         contents=[
+            GenDirectory('tls', 0, 0, 0o750),
             GenDirectory('opendkim', 0, DKIM_UG[1]),
             GenDirectory('dkimkeys', *DKIM_UG, 0o750),
         ],
