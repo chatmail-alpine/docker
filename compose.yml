@@ -15,6 +15,7 @@ services:
       - 443:443
     volumes:
       - ./instance/config/nginx:/etc/nginx:ro
+      - ./instance/web:/var/www/chatmail:ro
       - &vol-acme-web ./instance/data/certbot/web:/var/www/certbot
       - &vol-tls ./instance/config/tls:/tls:ro
       - &vol-newemail ./instance/socket/newemail:/run/newemail
