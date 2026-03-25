@@ -15,6 +15,7 @@ services:
       - 443:443
     volumes:
       - ./instance/config/nginx:/etc/nginx:ro
+      - &vol-acme-web ./instance/data/certbot/web:/var/www/certbot
       - &vol-tls ./instance/config/tls:/tls:ro
       - &vol-newemail ./instance/socket/newemail:/run/newemail
     depends_on: &deps-gen
@@ -25,7 +26,9 @@ services:
     image: git.dc09.xyz/chatmail/certbot:latest
     restart: on-failure
     volumes:
-      - ./instance/data/certbot:/etc/letsencrypt
+      - ./instance/data/certbot/etc:/etc/letsencrypt
+      - ./instance/data/certbot/var:/var/lib/letsencrypt
+      - *vol-acme-web
       - ./instance/config/tls:/tls
       - &vol-domain ./instance/config/domain:/domain:ro
     depends_on:

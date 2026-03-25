@@ -173,7 +173,11 @@ def init_datadirs(gc: GenCfg) -> None:
         contents=[
             GenDirectory('vmail'),
             GenDirectory('postfix', 0, 0),
-            GenDirectory('certbot', 0, 0, 0o750),
+            GenDirectory('certbot', 0, 0, contents=[
+                GenDirectory('etc', 0, 0, 0o750),
+                GenDirectory('var', 0, 0, 0o750),
+                GenDirectory('web', 0, 0),
+            ]),
         ],
     ))
 
