@@ -55,7 +55,7 @@ http {
     }
 
     location /.well-known/acme-challenge/ {
-      alias /var/www/certbot/;
+      root /var/www/certbot;
     }
   }
 
