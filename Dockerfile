@@ -1,5 +1,5 @@
 ARG ALPINE_VER=3.23
-ARG RUST_VER=1.93
+ARG RUST_VER=1.94
 
 
 # base alpine image for final stages
