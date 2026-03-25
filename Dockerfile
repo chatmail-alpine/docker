@@ -1,6 +1,7 @@
 ARG ALPINE_VER=3.23
 ARG RUST_VER=1.93
 
+
 # base alpine image for final stages
 FROM alpine:$ALPINE_VER AS run-base
 RUN <<EOF
@@ -15,14 +16,14 @@ RUN <<EOF
   add_ug 501 501 vmail /home/vmail
 EOF
 
-
-# -----
-# chatmaild images start
-
 # base image to build and run python modules
 # (deduplicates `apk add python3` operation)
 FROM run-base AS python-base
 RUN apk add --no-cache python3
+
+
+# -----
+# chatmaild images start
 
 # build chatmaild
 FROM python-base AS chatmaild-build
@@ -75,6 +76,19 @@ CMD ["/venv/bin/python3", "/main.py"]
 
 # chatmaild images end
 # -----
+
+
+# create certbot venv
+FROM python-base AS certbot-build
+RUN apk add --no-cache py3-virtualenv
+RUN python3 -m venv /venv
+RUN /venv/bin/pip install certbot
+
+# run certbot
+FROM python-base AS certbot-run
+COPY --from=certbot-build /venv /venv
+COPY ./src/tls-watch.lib.sh ./src/run-certbot.sh ./src/deploy-hook.sh /
+CMD ["/run-certbot.sh"]
 
 
 # run nginx

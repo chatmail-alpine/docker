@@ -21,6 +21,17 @@ services:
       generate: &dep-exit0
         condition: service_completed_successfully
 
+  certbot:
+    image: git.dc09.xyz/chatmail/certbot:latest
+    restart: on-failure
+    volumes:
+      - ./instance/data/certbot:/etc/letsencrypt
+      - ./instance/config/tls:/tls
+      - &vol-domain ./instance/config/domain:/domain:ro
+    depends_on:
+      nginx: &dep-start
+        condition: service_started
+
   postfix:
     image: git.dc09.xyz/chatmail/postfix:latest
     restart: on-failure
@@ -36,8 +47,7 @@ services:
       - &vol-dkim ./instance/socket/opendkim-postfix:/var/spool/postfix/opendkim
     depends_on:
       generate: *dep-exit0
-      dovecot: &dep-start
-        condition: service_started
+      dovecot: *dep-start
       opendkim: *dep-start
       filtermail: *dep-start
       filtermail-incoming: *dep-start
@@ -137,7 +147,7 @@ services:
     restart: on-failure
     network_mode: host  # allocates random ports for TURN
     volumes:
-      - ./instance/config/domain:/domain:ro
+      - *vol-domain
       - *vol-turn
 
   iroh-relay:
