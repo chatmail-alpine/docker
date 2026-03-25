@@ -32,7 +32,7 @@ RUN apk add --no-cache py3-virtualenv python3-dev musl-dev gcc git
 RUN python3 -m venv /venv
 RUN git clone \
   --single-branch --depth 1 \
-  --revision ff541b81ea35f403ad960604dd4fc8b5427f64ba \
+  --revision e8933c455f9eb4217cbb3461a6b603f26bb9cccd \
   https://github.com/chatmail/relay.git \
   /src
 RUN /venv/bin/pip install --no-cache-dir /src/chatmaild
@@ -187,7 +187,7 @@ CMD ["/iroh-relay", "--config-path", "/config.toml"]
 # build chatmail-turn
 FROM rust-base AS turn-build
 WORKDIR /src
-RUN git clone -b v0.3 https://github.com/chatmail/chatmail-turn.git /src
+RUN git clone -b v0.4 https://github.com/chatmail/chatmail-turn.git /src
 RUN cargo build --release
 
 # run chatmail-turn
@@ -202,7 +202,7 @@ CMD ["/turn.sh"]
 FROM rust-base AS filtermail-build
 WORKDIR /src
 RUN git clone \
-  --revision 977af0152234691bc267071a2737e5625d8b9577 \
+  --revision 325dd93c0e5503d55442c8b2bacf94c194f7c339 \
   https://github.com/chatmail/filtermail.git \
   /src
 RUN cargo build --release
