@@ -60,7 +60,8 @@ CMD ["/chatmaild.sh", "lastlogin", "chatmail-lastlogin", "lastlogin.socket"]
 FROM chatmaild-base AS cron-run
 WORKDIR /cron
 COPY ./src/crontab /cron/vmail
-USER root:root  # required for crond
+# root is required for cron
+USER root:root
 CMD ["/usr/sbin/crond", "-f", "-L", "/dev/stdout", "-c", "/cron"]
 
 # run config+webpages generator
