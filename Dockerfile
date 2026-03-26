@@ -28,7 +28,7 @@ RUN apk add --no-cache python3
 # build chatmaild
 FROM python-base AS chatmaild-build
 WORKDIR /src
-RUN apk add --no-cache py3-virtualenv python3-dev musl-dev gcc git
+RUN apk add --no-cache python3-dev musl-dev gcc git
 RUN python3 -m venv /venv
 RUN git clone \
   --single-branch --depth 1 \
