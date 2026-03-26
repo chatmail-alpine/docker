@@ -70,9 +70,6 @@ services:
       - &vol-metadata ./instance/socket/metadata:/run/chatmail-metadata
       - &vol-lastlogin ./instance/socket/lastlogin:/run/chatmail-lastlogin
       - &vol-doveauth ./instance/socket/doveauth:/run/doveauth
-    sysctls:
-      fs.inotify.max_user_instances: 65535
-      fs.inotify.max_user_watches: 65535
     depends_on:
       generate: *dep-exit0
       metadata: *dep-start
