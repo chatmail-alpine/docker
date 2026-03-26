@@ -69,6 +69,8 @@ FROM chatmaild-base AS generate-run
 USER root:root
 RUN --mount=type=bind,source=./src/generate/requirements.txt,target=/req.txt \
   /venv/bin/pip install --no-cache-dir -r /req.txt
+COPY ./src/config /template/config
+COPY ./src/web /template/web
 COPY ./src/generate/main.py /
 CMD ["/venv/bin/python3", "/main.py"]
 
