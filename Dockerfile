@@ -63,14 +63,11 @@ COPY ./src/crontab /cron/vmail
 USER root:root  # required for crond
 CMD ["/usr/sbin/crond", "-f", "-L", "/dev/stdout", "-c", "/cron"]
 
-# update virtualenv for config generator
-FROM chatmaild-build AS generate-build
+# run config+webpages generator
+FROM chatmaild-base AS generate-run
+USER root:root
 RUN --mount=type=bind,source=./src/generate/requirements.txt,target=/req.txt \
   /venv/bin/pip install --no-cache-dir -r /req.txt
-
-# run config+webpages generator
-FROM python-base AS generate-run
-COPY --from=generate-build /venv /venv
 COPY ./src/generate/main.py /
 CMD ["/venv/bin/python3", "/main.py"]
 
