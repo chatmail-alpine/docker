@@ -1,6 +1,6 @@
 #!/bin/sh
 
-/filtermail "$@" &
+"$@" &
 pid=$!
 
 for sig in INT TERM; do

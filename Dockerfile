@@ -210,9 +210,9 @@ RUN cargo build --release
 # run filtermail
 FROM run-base AS filtermail-run
 COPY --from=filtermail-build /src/target/release/filtermail /
-COPY ./src/fm-init.sh /
+COPY ./src/sigwrap.sh /
 USER vmail:vmail
-ENTRYPOINT ["/fm-init.sh", "/etc/chatmail.ini"]
+ENTRYPOINT ["/sigwrap.sh", "/filtermail", "/etc/chatmail.ini"]
 
 # build newemail
 FROM rust-base AS newemail-build
