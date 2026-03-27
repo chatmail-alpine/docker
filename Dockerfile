@@ -182,6 +182,7 @@ COPY --from=iroh-build /etc/min-passwd /etc/passwd
 COPY --from=iroh-build /etc/min-group /etc/group
 COPY ./src/iroh-relay.toml /config.toml
 USER 450:450
+STOPSIGNAL SIGINT
 CMD ["/iroh-relay", "--config-path", "/config.toml"]
 
 # build chatmail-turn
