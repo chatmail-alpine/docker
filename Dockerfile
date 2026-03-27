@@ -58,11 +58,11 @@ CMD ["/chatmaild.sh", "lastlogin", "chatmail-lastlogin", "lastlogin.socket"]
 
 # run chatmail-expire and fsreport
 FROM chatmaild-base AS cron-run
-WORKDIR /cron
-COPY ./src/crontab /cron/vmail
 # root is required for cron
 USER root:root
-CMD ["/usr/sbin/crond", "-f", "-L", "/dev/stdout", "-c", "/cron"]
+COPY ./src/sigwrap.sh /
+COPY ./src/crontab /cron/vmail
+CMD ["/sigwrap.sh", "/usr/sbin/crond", "-f", "-L", "/dev/stdout", "-c", "/cron"]
 
 # run config+webpages generator
 FROM chatmaild-base AS generate-run
