@@ -171,7 +171,12 @@ def init_datadirs(gc: GenCfg) -> None:
         owner=0,
         group=0,
         contents=[
-            GenDirectory('vmail'),
+            GenDirectory('vmail', contents=[
+                GenDirectory('mail', contents=[
+                    # vmail/mail/chat.example.com
+                    GenDirectory(gc.cmd.mail_domain),
+                ]),
+            ]),
             GenDirectory('postfix', 0, 0),
             GenDirectory('certbot', 0, 0, contents=[
                 GenDirectory('etc', 0, 0, 0o750),
