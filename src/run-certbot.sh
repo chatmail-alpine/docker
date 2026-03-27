@@ -36,4 +36,11 @@ mkdir -p /cron
 echo "${CRON_EXPR:-2 1 * * *} /venv/bin/certbot renew -q" >/cron/root
 
 echo "Running cron..."
-exec /usr/sbin/crond -f -L /dev/stdout -c /cron
+/usr/sbin/crond -f -L /dev/stdout -c /cron &
+pid=$!
+
+for sig in INT TERM; do
+  trap "kill -$sig $pid" "$sig"
+done
+
+wait "$pid"
