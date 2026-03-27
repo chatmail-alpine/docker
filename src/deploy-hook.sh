@@ -14,8 +14,8 @@ cp "$cert_dir/privkey.pem" "$tls_key"
 echo "Private key copied to $tls_key"
 
 chown root: "$tls_cert" "$tls_key"
-chmod 755 "$tls_cert"
-chmod 700 "$tls_key"
+chmod 644 "$tls_cert"
+chmod 600 "$tls_key"
 
 echo "Reloading services"
 touch "$tls_watch"
