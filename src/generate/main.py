@@ -195,14 +195,14 @@ def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
 
     stack: list[GenDirectory] = []
 
-    def _add_with_paths(it: Iterable[GenDirectory]) -> None:
+    def _add_with_paths(parent: Path, it: Iterable[GenDirectory]) -> None:
         if not it:
             return
         for i in it:
-            i.path = root / i.name
+            i.path = parent / i.name
             stack.append(i)
 
-    _add_with_paths(tree.contents)
+    _add_with_paths(root, tree.contents)
     while stack:
         item = stack.pop()
         path = item.path
@@ -210,7 +210,7 @@ def _init_dir(gc: GenCfg, tree: GenDirectory, rm: bool = False) -> None:
             shutil.rmtree(path)
         path.mkdir(mode=item.mode, exist_ok=True)
         _chown_one(gc, path, item.owner, item.group)
-        _add_with_paths(item.contents)
+        _add_with_paths(path, item.contents)
 
 
 def _chown_one(gc: GenCfg, p: Path, uid: int, gid: int) -> None:
