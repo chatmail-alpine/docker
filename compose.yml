@@ -137,6 +137,7 @@ services:
     volumes:
       - *vol-ini
       - *vol-newemail
+    depends_on: *deps-gen
 
   cron:
     image: git.dc09.xyz/chatmail/cron:latest
@@ -153,6 +154,7 @@ services:
     volumes:
       - *vol-domain
       - *vol-turn
+    depends_on: *deps-gen
 
   iroh-relay:
     image: git.dc09.xyz/chatmail/iroh-relay:latest
