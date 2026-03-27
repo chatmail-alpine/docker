@@ -14,8 +14,8 @@ if [ ! -f "$tls_key" ]; then
   webroot="${WEBROOT:-/var/www/certbot}"
 
   echo "Running certbot certonly..."
-  echo "  Domains: $cert_domains"
-  echo "  Webroot: $webroot"
+  echo " Domains: $cert_domains"
+  echo " Webroot: $webroot"
 
   /venv/bin/certbot certonly \
     --webroot -w "$webroot" \
