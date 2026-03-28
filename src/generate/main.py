@@ -90,19 +90,31 @@ def render_web(gc: GenCfg) -> None:
             # removing ./static/ prefix
             parent_rel = parent_rel.relative_to(first_dir)
             for file in files:
-                src = web_src / parent / file
                 dst = web_dst / parent_rel / file
                 _mkdirs(dst)
-                shutil.copy(src, dst)
+                shutil.copy(parent / file, dst)
         else:
-            # render as page templates
+            # render as templates
             for file in files:
                 tmpl = j2_env.get_template(os.fspath(parent_rel / file))
-                dst = (web_dst / parent_rel / file).with_suffix('')
-                if dst.name == 'index':
-                    dst = dst.with_suffix('.html')
-                else:
-                    dst = dst / 'index.html'
+                dst = web_dst / parent_rel / file
+
+                # if it's a page template...
+                if dst.suffix in ('.html', '.md'):
+                    # ...and is named `index`
+                    if dst.stem == 'index':
+                        # render it into [parent/]index.html file
+                        dst = dst.with_suffix('.html')
+                    else:
+                        # otherwise, render into [parent/]name/index.html
+                        # so we can use neat paths such as:
+                        #  chat.example.com/privacy
+                        # instead of:
+                        #  chat.example.com/privacy.html
+                        dst = dst.with_suffix('') / 'index.html'
+                # otherwise, don't touch the filename
+                # (e.g. for .well-known endpoints)
+
                 _mkdirs(dst)
                 with dst.open('wt', encoding='utf-8') as f:
                     f.write(tmpl.render(**cmd_obj))
