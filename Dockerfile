@@ -101,6 +101,8 @@ CMD ["/nginx.sh"]
 # run postfix
 FROM run-base AS postfix-run
 RUN apk add --no-cache postfix
+RUN mkdir -p /etc/postfix.orig && \
+  cp -r /etc/postfix/* /etc/postfix.orig
 COPY ./src/tls-watch.lib.sh ./src/postfix.sh /
 EXPOSE 25 465 587
 CMD ["/postfix.sh"]

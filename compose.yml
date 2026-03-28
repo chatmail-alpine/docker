@@ -46,7 +46,7 @@ services:
     volumes:
       - &vol-vmail ./instance/data/vmail:/home/vmail
       - &vol-postfix ./instance/data/postfix:/var/spool/postfix
-      - ./instance/config/postfix:/etc/postfix:ro
+      - ./instance/config/postfix:/etc/postfix
       - *vol-tls
       - &vol-dkim ./instance/socket/opendkim-postfix:/var/spool/postfix/opendkim
     depends_on:
