@@ -9,6 +9,11 @@ docker_build () {
     .
 }
 
+if [ -n "$1" ] && [ -n "$2" ]; then
+  docker_build "$1" "$2"
+  exit
+fi
+
 docker_build metadata-run metadata
 docker_build doveauth-run doveauth
 docker_build lastlogin-run lastlogin
