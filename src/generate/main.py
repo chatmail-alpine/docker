@@ -133,6 +133,29 @@ def _mkdirs(p: Path) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
 
 
+def gen_web_qr(gc: GenCfg) -> None:
+    domain = gc.cmd.mail_domain
+    dst = gc.ins_dir / 'web' / f'qr-invite-{domain}.png'
+    if dst.exists():
+        return
+
+    import qrcode
+    from qrcode.image.pure import PyPNGImage
+
+    qr = qrcode.QRCode(
+        box_size=10,
+        border=1,
+        error_correction=qrcode.ERROR_CORRECT_H,
+    )
+    qr.add_data(f'DCACCOUNT:https://{domain}/new')
+    qr.make(fit=True)
+
+    img = qr.make_image(image_factory=PyPNGImage)
+
+    with dst.open('wb') as f:
+        img.save(f)
+
+
 VMAIL_UG = 501, 501
 NGINX_UG = 101, 101
 POSTFIX_UG = 201, 201
@@ -237,6 +260,7 @@ if __name__ == '__main__':
     gc.ins_dir.chmod(0o755)
     render_cfg(gc)
     render_web(gc)
+    gen_web_qr(gc)
     init_rundirs(gc)
     fix_cfg_perms(gc)
     init_datadirs(gc)
