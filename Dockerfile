@@ -35,6 +35,23 @@ RUN git clone \
   --revision e8933c455f9eb4217cbb3461a6b603f26bb9cccd \
   https://github.com/chatmail/relay.git \
   /src
+RUN git apply - <<-EOF
+diff --git a/chatmaild/pyproject.toml b/chatmaild/pyproject.toml
+index db3d7bb..1db0600 100644
+--- a/chatmaild/pyproject.toml
++++ b/chatmaild/pyproject.toml
+@@ -6,10 +6,7 @@ build-backend = "setuptools.build_meta"
+ name = "chatmaild"
+ version = "0.3"
+ dependencies = [
+-  "aiosmtpd",
+   "iniconfig",
+-  "deltachat-rpc-server",
+-  "deltachat-rpc-client",
+   "filelock",
+   "requests",
+   "crypt-r >= 3.13.1 ; python_version >= '3.11'",
+EOF
 RUN /venv/bin/pip install --no-cache-dir /src/chatmaild
 
 # base image to run chatmaild
