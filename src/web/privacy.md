@@ -1,9 +1,9 @@
 {% extends "layout/base.html" %}
 {% block title %}privacy policy{% endblock %}
 {% block content -%}
-# Privacy Policy for {{ mail_domain }}
+## Privacy Policy for {{ mail_domain }}
 
-## Summary: No personal data asked or collected
+### Summary: No personal data asked or collected
 
 This chatmail server neither asks for nor retains personal information.
 Chatmail servers exist to reliably transmit (store and deliver) end-to-end encrypted messages
@@ -30,7 +30,7 @@ this chatmail server may not require a privacy policy.
 Nevertheless, we provide legal details below to make life easier
 for data protection specialists and lawyers scrutinizing chatmail operations.
 
-## 1. Name and contact information
+### 1. Name and contact information
 
 Responsible for the processing of your personal data is:
 ```
@@ -44,7 +44,7 @@ We have appointed a data protection officer:
 {{ privacy_pdo }}
 ```
 
-## 2. Processing when using chat e-mail services
+### 2. Processing when using chat e-mail services
 
 We provide services optimized for the use from [Delta Chat](https://delta.chat) apps
 and process only the data necessary for the setup and technical execution of message delivery.
@@ -70,7 +70,7 @@ We process the following data and details:
   allowing them to send and retrieve ephemeral messages
   which are never stored on the chatmail server, also not in encrypted form.
 
-### 2.1 Account setup
+#### 2.1 Account setup
 
 Creating an account happens in one of two ways on our mail servers:
 
@@ -86,7 +86,7 @@ No phone numbers, other email addresses, or other identifiable data is currently
 The legal basis for the processing is Art. 6 (1) lit. b GDPR,
 as you have a usage contract with us by using our services.
 
-### 2.2 Processing of E-Mail-Messages
+#### 2.2 Processing of E-Mail-Messages
 
 In addition, we will process data to keep the server infrastructure operational
 for purposes of e-mail dispatch and abuse prevention.
@@ -117,7 +117,7 @@ security and abuse prevention is Art. 6 (1) lit. f GDPR.
 Our legitimate interest results from the aforementioned purposes.
 We will not use the collected data for the purpose of drawing conclusions about your person.
 
-## 3. Processing when using our Website
+### 3. Processing when using our Website
 
 When you visit our website, the browser used on your end device
 automatically sends information to the server of our website.
@@ -152,7 +152,7 @@ The legal basis for the data processing is Art. 6 (1) lit. f GDPR.
 Our legitimate interest results from the aforementioned purposes of data collection.
 We will not use the collected data for the purpose of drawing conclusions about your person.
 
-## 4. Transfer of Data
+### 4. Transfer of Data
 
 We do not retain any personal data but e-mail messages waiting to be delivered
 may contain personal data.
@@ -185,7 +185,7 @@ on commissioned processing (Art. 28 (3) GDPR), which obliges our contractor,
 among other things, to implement appropriate security measures
 and grants us comprehensive control powers.
 
-## 5. Rights of the data subject
+### 5. Rights of the data subject
 
 The rights arise from Articles 12 to 23 GDPR.
 Since no personal data is stored on our servers, even in encrypted form,
@@ -201,7 +201,7 @@ or workplace or our registered office for this purpose.
 The supervisory authority responsible for our place of business
 is the <code>{{ privacy_supervisor }}</code>.
 
-## 6. Validity of this privacy policy
+### 6. Validity of this privacy policy
 
 This data protection declaration is valid as of *October 2024*.
 Due to the further development of our service and offers
