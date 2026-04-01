@@ -75,6 +75,10 @@ mkdir instance
 
 ### Getting certs
 
+**Note:** see "[Special cases](#special-cases)" if you already have
+an ACME client and/or an HTTP server running on the host
+and want to replace the chatmail-provided one with it.
+
 First, launch nginx only:
 ```shell
 docker compose up -d nginx
