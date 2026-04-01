@@ -156,6 +156,41 @@ _imaps._tcp.chat.example.com.        SRV  0  1  993  chat.example.com.
 ```
 (`0` is priority, `1` is weight, the third number is port)
 
+## Fine-grained config
+
+You may want to modify lower-level chatmail components' configuration files
+and/or web pages templates.
+
+In that case, you need to download the whole chatmail-docker repository,
+instead of only the two files (compose and ini).
+```shell
+git clone https://git.dc09.xyz/chatmail/docker.git chatmail
+cd chatmail
+```
+
+<details>
+<summary>Mirrors</summary>
+
+**Codeberg**
+```shell
+git clone https://codeberg.org/chatmail-alpine/docker.git chatmail
+```
+
+**GitHub**
+```shell
+git clone https://github.com/chatmail-alpine/docker.git chatmail
+```
+
+</details>
+
+In compose.yml, uncomment the two volumes for the `generate` service
+to overlay default templates with your changes.
+
+Components' configs are in `src/config`. \
+Web pages are in `src/web`. \
+Other files are used only when building images and modifiying them gives no effect
+(though some of them can actually still be replaced by mounting volumes).
+
 ## Special cases
 
 Basically, you can modify your compose.yml whatever the way you want
