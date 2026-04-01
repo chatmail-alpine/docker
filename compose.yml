@@ -4,6 +4,7 @@ services:
     image: git.dc09.xyz/chatmail/generate:latest
     volumes:
       - ./instance:/instance
+      - ./chatmail.ini:/chatmail.ini:ro
       # - ./src/config:/template/config:ro
       # - ./src/web:/template/web:ro
 
@@ -89,7 +90,7 @@ services:
     command: outgoing
     volumes:
       - *vol-vmail
-      - &vol-ini ./instance/chatmail.ini:/etc/chatmail.ini:ro
+      - &vol-ini ./chatmail.ini:/etc/chatmail.ini:ro
     depends_on: &deps-fm
       generate: *dep-exit0
       postfix: *dep-start

@@ -21,8 +21,8 @@ class GenCfg:
     def from_env(cls) -> 'GenCfg':
         src_dir = Path(os.getenv('SRCDIR', '/template'))
         ins_dir = Path(os.getenv('INSDIR', '/instance'))
-        cmd_path = ins_dir / 'chatmail.ini'
-        cmd = chatmaild.config.read_config(cmd_path)
+        ini_path = Path(os.getenv('INIPATH', '/chatmail.ini'))
+        cmd = chatmaild.config.read_config(ini_path)
         is_root = os.getuid() == 0
         return cls(src_dir, ins_dir, cmd, is_root)
 
