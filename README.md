@@ -87,6 +87,11 @@ docker compose run --rm certbot
 Answer a couple of question, and that's it,
 you received new TLS certificates for your chatmail.
 
+(Important) Restart nginx so it will run with a different config with TLS enabled:
+```shell
+docker compose restart nginx
+```
+
 ### Start chatmail
 
 ```shell
