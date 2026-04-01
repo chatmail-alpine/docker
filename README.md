@@ -68,6 +68,11 @@ curl -fsS -o chatmail.ini https://github.com/chatmail-alpine/docker/raw/refs/hea
 Open chatmail.ini and adjust parameters.
 You need to change `mail_domain` to your domain, other options can be left at their defaults.
 
+Create a directory where chatmail relay stores all of its files:
+```shell
+mkdir instance
+```
+
 ### Getting certs
 
 First, launch nginx only:
