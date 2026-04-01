@@ -156,13 +156,16 @@ _imaps._tcp.chat.example.com.        SRV  0  1  993  chat.example.com.
 Basically, you can modify your compose.yml whatever the way you want
 if you know what you're doing.
 
-But properly configuring TLS certs can be a bit tricky,
-here's how to do it when you want to manage certs from the outside.
-
 ### I already have certbot installed
 
-Note: it may be better to issue certs for chatmail separately.
-Please check if the second option "I&nbsp;already have nginx installed" suits your case.
+Properly configuring TLS certs can be a bit tricky,
+here's how to do it when you want to manage certs from the outside.
+
+**Note:** it may be better to issue certs for chatmail separately
+and leave the provided certbot configuration as is.
+Please check whether the second option
+"[I&nbsp;already have nginx installed](#i-already-have-nginx-installed)"
+suits your case.
 
 First, run the generator script to initialize the directory tree:
 ```shell
@@ -221,8 +224,9 @@ and proceed to the next steps.
 
 ### I already have nginx installed
 
-**See the [provided nginx config](https://git.dc09.xyz/chatmail/docker/src/branch/main/src/config/nginx/nginx.conf.j2)
-as a reference**
+**Note:** see the
+[provided nginx config](https://git.dc09.xyz/chatmail/docker/src/branch/main/src/config/nginx/nginx.conf.j2)
+as a reference
 (mirrors: [Codeberg](https://codeberg.org/chatmail-alpine/docker/src/branch/main/src/config/nginx/nginx.conf.j2),
 [GitHub](https://github.com/chatmail-alpine/docker/blob/main/src/config/nginx/nginx.conf.j2)).
 
