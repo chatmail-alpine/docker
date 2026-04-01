@@ -87,7 +87,8 @@ docker compose run --rm certbot
 Answer a couple of question, and that's it,
 you received new TLS certificates for your chatmail.
 
-(Important) Restart nginx so it will run with a different config with TLS enabled:
+**Important:** \
+Restart nginx so it will run with a different config with TLS enabled:
 ```shell
 docker compose restart nginx
 ```
@@ -219,7 +220,7 @@ RENEWED_LINEAGE="/etc/letsencrypt/live/chat.example.com" \
 
 Now, comment out or remove the `certbot:` block from your compose.yml.
 
-Restart nginx from chatmail compose if you started it before
+**Restart** nginx from chatmail compose if you started it before
 and proceed to the next steps.
 
 ### I already have nginx installed
