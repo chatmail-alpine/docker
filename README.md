@@ -287,6 +287,22 @@ Note: the certbot webroot contains a `.well-known` directory,
 i.&nbsp;e. you have to set `root`, not an `alias`
 (alternatively, `rewrite` + `alias`, but why would you need such a complexity).
 
+<details>
+<summary>nginx config snippet</summary>
+
+```nginx
+http {
+  server {
+    # ...
+    location /.well-known/acme-challenge/ {
+      root /home/user/chatmail/instance/data/certbot/web;
+    }
+  }
+}
+```
+
+</details>
+
 TLS certificate issued by the chatmail certbot is located in
 `/home/user/chatmail/instance/config/tls/cert.pem` and `key.pem`.
 
