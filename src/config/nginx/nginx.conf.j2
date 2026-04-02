@@ -15,8 +15,8 @@ events {
 stream {
   map $ssl_preread_alpn_protocols $proxy {
     default unix:/run/nginx.sock;
-    ~\bsmtp\b 127.0.0.1:465;
-    ~\bimap\b 127.0.0.1:993;
+    ~\bsmtp\b postfix:465;
+    ~\bimap\b dovecot:993;
   }
 
   server {
