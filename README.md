@@ -59,8 +59,8 @@ curl -fsS -o chatmail.ini https://codeberg.org/chatmail-alpine/docker/raw/branch
 
 **GitHub**
 ```shell
-curl -fsSO https://github.com/chatmail-alpine/docker/raw/refs/heads/main/compose.yml
-curl -fsS -o chatmail.ini https://github.com/chatmail-alpine/docker/raw/refs/heads/main/chatmail.example.ini
+curl -fsSLO https://github.com/chatmail-alpine/docker/raw/refs/heads/main/compose.yml
+curl -fsSL -o chatmail.ini https://github.com/chatmail-alpine/docker/raw/refs/heads/main/chatmail.example.ini
 ```
 
 </details>
