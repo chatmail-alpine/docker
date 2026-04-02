@@ -14,6 +14,7 @@ RUN <<EOF
   add_ug 201 201 postfix /var/spool/postfix
   add_ug 202 202 opendkim /run/opendkim
   add_ug 501 501 vmail /home/vmail
+  addgroup postfix opendkim
 EOF
 
 # base image to build and run python modules
