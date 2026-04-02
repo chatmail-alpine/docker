@@ -7,6 +7,11 @@ for cfg in postfix-files postfix-files.d dynamicmaps.cf dynamicmaps.cf.d; do
   cp -rf /etc/postfix.orig/"$cfg" /etc/postfix
 done
 
+# copy resolv.conf
+etc_chroot="/var/spool/postfix/etc"
+mkdir -p "$etc_chroot"
+cp /etc/resolv.conf "$etc_chroot"
+
 /usr/sbin/postfix start-fg &
 postfix_pid=$!
 
