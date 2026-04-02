@@ -1,11 +1,28 @@
 #!/bin/sh
 
+set -e
+
+: "${REPOS:=git.dc09.xyz/chatmail}"
+: "${BRANCH:=latest}"
+
 docker_build () {
   local target="$1" imgname="$2"
+
+  tags=""
+  for repo in $REPOS; do
+    tags="$tags -t $repo/$imgname:$BRANCH"
+    if [ -n "$VERSION" ]; then
+      tags="$tags -t $repo/$imgname:$VERSION"
+    fi
+  done
+
+  [ "$PUSH" = 1 ] && push="--push" || push=""
+
   docker buildx build \
     -f Dockerfile \
     --target "$target" \
-    -t git.dc09.xyz/chatmail/"$imgname":latest \
+    $tags \
+    $push \
     .
 }
 
