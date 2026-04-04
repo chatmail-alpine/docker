@@ -1,0 +1,55 @@
+name: Chatmail in Docker CI
+
+on:
+  push:
+    paths:
+      - .forgejo/**/*
+      - src/**/*
+      - Dockerfile
+      - build.sh
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # git clone
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      # docker login
+      - name: Log in to registries
+        run: |
+          login () {
+            local host="$1" user="$2" pswd="$3"
+            echo "$pswd" | docker login "$host" -u "$user" --password-stdin
+          }
+          login git.dc09.xyz '${{ secrets.CR_GITDC_USER }}' '${{ secrets.CR_GITDC_PASSWORD }}'
+          #login codeberg.org '${{ secrets.CR_CODEBERG_USER }}' '${{ secrets.CR_CODEBERG_PASSWORD }}'
+          #login ghcr.io '${{ secrets.CR_GHCR_USER }}' '${{ secrets.CR_GHCR_PASSWORD }}'
+      # install docker buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          platforms: linux/amd64
+      # docker buildx build --push for each image
+      - name: Build and push images
+        run: |
+          export REPOS="
+            git.dc09.xyz/chatmail
+          "
+          #  codeberg.org/chatmail-alpine
+          #  ghcr.io/chatmail-alpine
+          #"
+          export PUSH=1
+          case '${{ forgejo.ref }}' in
+            refs/tags/*)
+              export \
+                BRANCH=latest \
+                VERSION='${{ forgejo.ref_name }}';;
+            refs/heads/*)
+              export \
+                BRANCH='${{ forgejo.ref_name }}';;
+            *)
+              echo "ref is what??" '${{ forgejo.ref }}'
+              exit 1;;
+          esac
+          ./build.sh
