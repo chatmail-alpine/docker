@@ -81,7 +81,6 @@ CMD ["/venv/bin/python3", "/main.py"]
 
 # create certbot venv
 FROM python-base AS certbot-build
-RUN apk add --no-cache py3-virtualenv
 RUN python3 -m venv /venv
 RUN /venv/bin/pip install certbot
 
