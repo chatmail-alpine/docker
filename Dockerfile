@@ -36,7 +36,8 @@ RUN git clone \
   --revision 4521f03c99c8537ccf3f199599e60125cd35ce86 \
   https://github.com/chatmail/relay.git \
   /src
-RUN /venv/bin/pip install --no-cache-dir /src/chatmaild
+RUN /venv/bin/pip install --no-cache-dir /src/chatmaild && \
+  /venv/bin/pip uninstall -y pip
 
 # base image to run chatmaild
 FROM python-base AS chatmaild-base
@@ -69,7 +70,9 @@ CMD ["/sigwrap.sh", "/usr/sbin/crond", "-f", "-L", "/dev/stdout", "-c", "/cron"]
 FROM chatmaild-base AS generate-run
 USER root:root
 RUN --mount=type=bind,source=./src/generate/requirements.txt,target=/req.txt \
-  /venv/bin/pip install --no-cache-dir -r /req.txt
+  /venv/bin/python3 -m ensurepip && \
+  /venv/bin/pip3 install --no-cache-dir -r /req.txt && \
+  /venv/bin/pip3 uninstall -y pip
 COPY ./src/config /template/config
 COPY ./src/web /template/web
 COPY ./src/generate/main.py /
